@@ -32,7 +32,7 @@ AURA 是一套**注入式界面插件**，用于 [UFI-TOOLS](https://github.com/
 
 ### 一体化工作台
 
-13 个功能域，覆盖官方后台的全部主要能力，并整合了 12 个社区插件：
+13 个功能域，覆盖官方后台的主要能力；其中 5 项能力移植自社区插件并保留原作者署名（见[致谢与许可](#致谢与许可)）：
 
 | 分组 | 功能域 |
 |---|---|
@@ -221,13 +221,17 @@ node scripts/minify.cjs dist/ufitools-aura-v2.5.3.js
 插件在 `window.AURA` 暴露有限的运行时接口，用于排障与集成：
 
 ```js
-AURA.status()        // 版本、启用态、当前域、主题、token 状态、版别
+AURA.status()        // 版本、启用态、当前域、主题、token 状态、版别、实时轮询状态
 AURA.show('signal')  // 切换到指定域
+AURA.refresh(true)   // 手动刷新当前域
 AURA.disable()       // 回退官方界面
 AURA.enable()        // 重新启用
 AURA.setToken('…')   // 手工指定 API token
-AURA.swallowed()     // 取出被静默收口的最近 30 条异常
+AURA.swallowed()     // { n, last }：累计条数与最近 30 条被静默收口的异常
+AURA.debug(true)     // 开关调试输出
 AURA.api.probeEd()   // 重新探测版别
+AURA.api.get(path)   // 同源 GET / POST / 表单，自动携带登录态
+AURA.viewSet('sms', false)  // 界面模块显隐；AURA.hidden() 读取当前隐藏列表
 ```
 
 调试模式：地址栏加 `?aura_debug=1`，或控制台执行 `localStorage.aura_debug=1` 后刷新。开启后被静默收口的异常会同时输出到 console。
