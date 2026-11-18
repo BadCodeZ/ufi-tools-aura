@@ -1,0 +1,27 @@
+AURA — UFI-TOOLS 界面增强插件
+NOTICE（归属声明）
+
+本文件的归属信息依 Apache License 2.0 第 4(d) 条保留，仅供说明，不修改许可条款。
+
+一、上游项目
+  UFI-TOOLS — Copyright MiniKano
+  https://github.com/kanoqwq/UFI-TOOLS
+  AURA 为在该项目基础上的改造与增强作品，沿用其界面语言并依赖其运行环境。
+  上游自身的许可以其仓库声明为准。
+
+二、移植自社区插件的功能（出处已同步标注在插件对应卡片/服务页）
+  - 信号质量评分：源自「信号面板 1.0」（作者 欢喜猴）
+  - 按客户端流量：源自「设备流量监控 v19.10」（作者 钴雮）
+  - 网络加速：源自「去限速 2.0」
+  - 樱花映射、OpenList：源自同名插件（OpenList 作者 MiniKano）
+  上述功能保留原作者署名，相关权利归各自作者所有。
+
+三、第三方素材
+  - 运营商图标 Arcticons：作者 Donnnno，许可 CC BY-SA 4.0
+    https://creativecommons.org/licenses/by-sa/4.0/
+    以内联矢量路径形式使用，按该许可要求保留署名与相同方式共享条款。
+
+四、AURA 自身部分
+  除上述上游、社区插件与第三方素材之外的 AURA 原创代码与界面，
+  Copyright 2026 BadCodeZ，依 Apache License 2.0 授权。
+  https://github.com/BadCodeZ

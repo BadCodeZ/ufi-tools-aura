@@ -1,0 +1,24 @@
+# 构建中间产物 / 缓存
+build/
+_tmp*
+*.tmp
+*.log
+
+# 本地状态与隐私（token、账本、配置一律不进仓库）
+_gate.rc
+*.rc.local
+_size_ledger.csv
+_budget.json
+.env
+*.key
+*.pem
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
