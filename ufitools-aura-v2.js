@@ -1352,7 +1352,7 @@ button.a2-sw.is-busy i{animation:a2swp .9s ease-in-out infinite;}
    🔴 v2.4.37：手机弹窗内容宽约 400px，原来 minmax(150px,1fr) 会排成两列 164px，
    「无线 ADB / 已开启 · 端口 5555」被压成两行（key 断成「无线 AD」+「B」）。
    改成 220px 起算：窄屏自然落成单列，官方宽弹窗里仍能排 2-3 列；key 与徽章都不许折行。 */
-.a2-advst{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px 12px;
+.a2-advst{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(220px,100%),1fr));gap:6px 12px;
   margin:var(--a2-sp-2) 0;padding:9px 12px;background:var(--a2-surface-2);border-radius:var(--a2-r-sm);}
 .a2-advst-i{display:flex;align-items:center;gap:8px;font-size:var(--a2-fs-sm);min-width:0;}
 .a2-advst-k{color:var(--a2-ink-soft);white-space:nowrap;flex:none;}
@@ -1405,7 +1405,7 @@ html.a2-dark .a2-stat.is-dur .a2-stat-ic{color:var(--a2-ink-soft);}
 
 /* 概览一屏：主图卡 + 四卡详情行（KPI 条 → 主图 → 详情，单一阅读动线） */
 .a2-ov{display:flex;flex-direction:column;gap:var(--a2-sp-4);min-width:0;}
-.a2-grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--a2-sp-4);align-items:stretch;}
+.a2-grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--a2-sp-4);align-items:start;}
 /* 四格 KPI 与插件双栏保留等高：前者结构同构，后者左右高度本就接近 */
 /* data-n ＝ 当前可见卡数（ovApply 写入）。隐藏后若仍按 4 列排，右侧会整片空着，
    所以列数跟着可见数走。n=2/4 沿用基础与断点默认，不另写规则。 */
@@ -1433,12 +1433,9 @@ html.a2-dark .a2-stat.is-dur .a2-stat-ic{color:var(--a2-ink-soft);}
 .a2-ovmv{display:flex;gap:var(--a2-sp-1);}
 .a2-ovmv .a2-mini{min-width:28px;padding:0 var(--a2-sp-1);}
 .a2-ovmv .a2-mini[disabled]{opacity:.35;cursor:not-allowed;}
-/* 概览四卡等高（grid4 默认 stretch），但四卡内容长度差得远：卡高由「内存占用」的
-   5 条进程决定（402px），「今日流量排行 / 运行状态 / 硬件温度」只到 180-250，
-   下方留出 150-220 的空白。v2.4.49 把每卡最后一个子元素（说明 / 操作按钮 / 进度条）
-   压到卡底：空白从「内容下方一大块」变成「内容与说明之间的一段」，卡片看起来是被撑满的。
-   🔴 :not(:nth-child(2)) 是必须的：只有 h3 + 单个内容块的卡（硬件温度）如果也贴底，
-   内容会被推到底部，反而更空。 */
+/* 概览四卡按内容高度排（v2.5.3）：内存卡 402px 会撑高同排所有卡，
+   排行卡底部因此空出 120px 以上。等高只保留给结构同构的 KPI 与插件双栏。
+   内容多的卡自然决定行高，矮卡不再被拉长；布局调整仍只改顺序与显隐。 */
 @media (min-width:1100px){
   .a2-grid4 > .a2-card{display:flex;flex-direction:column;}
   .a2-grid4 > .a2-card > *:last-child:not(:nth-child(2)){margin-top:auto;}
