@@ -9662,7 +9662,9 @@ details.a2-behmore[open] summary::before{content:"- ";}
   var SVC_PROBE={
     adg:{bin:['/data/agh/agh/bin/AdGuardHome','/data/agh/AdGuardHome'],pat:['AdGuardHome'],flag:'-x',
       dir:'/data/agh'},
-    openlist:{bin:['/data/openlist/openlist','/data/openlist/bin/openlist','/data/alist/alist',
+      /* 🔴 v2.5.3：兼容原始名 openlist-android-arm64，规范名优先 */
+    openlist:{bin:['/data/openlist/openlist','/data/openlist/openlist-android-arm64',
+      '/data/openlist/alist-android-arm64','/data/openlist/bin/openlist','/data/alist/alist',
       '/sdcard/openlist/openlist','/data/local/openlist/openlist','/data/local/tmp/openlist'],
       pat:['openlist','alist'],flag:'-x',dir:'/data/openlist'},
     sfrp:{bin:['/data/kano_sakurafrp/frpc','/data/kano_sakurafrp/frpc.bin'],pat:['frpc'],flag:'-x',
@@ -10928,7 +10930,8 @@ details.a2-behmore[open] summary::before{content:"- ";}
           var key=String(o).split('---')[0].trim(), ini=String(o).split('---').slice(1).join('---');
           fillSlot('sf-key',kv({'当前密钥':key?esc(key.slice(0,4)+'••••'+key.slice(-3)):badge(false,'未设置'),
             '文件':esc(SF_DIR+'args.txt')}));
-          var ti=$('#sf-inita'); if(ti) ti.value=ini;
+          /* 空 ini 仅填编辑器最小模板，不写设备 */
+          var ti=$('#sf-inita'); if(ti) ti.value=ini.trim()?ini:'[common]\nuser = your_token\nserver_addr = natfrp.com\nserver_port = 7000\n[tunnel]\ntype = tcp\nlocal_port = 80\nremote_port = 8080';
           var ki=$('#sf-keyin'); if(ki) ki.value=key;
         }).catch(failH('sf-key','sfrp'));
       return;
@@ -13332,7 +13335,7 @@ return qrcode;
     openlist:{
       n:'OpenList', dir:'/data/openlist/',
       bin:'/data/openlist/openlist',
-      binAlt:'/data/openlist/openlist.bak_v427',
+      binAlt:'/data/openlist/openlist-android-arm64', /* 旧版/手工解压名 */
       keepPaths:'/data/openlist/data/ 整个目录（config.json、data.db、log、temp）',
       keepSize:'约 146 MB（含 .bak 备份二进制）',
       purgeExtra:'data/ 里的站点配置、挂载、用户库与访问日志',
@@ -13745,10 +13748,15 @@ return qrcode;
         /* 解压前必须验包：半截包解出来的是残目录，盲目覆盖 + 启动会把残目录当可用安装 */
         if(!/TAR_OK/.test(String(o))) throw new Error('安装包校验失败（不是有效 tar.gz），已中止，未改动 '+OL_DIR);
         progIndet('openlist',72,'解包安装','正在解压到 '+OL_DIR+'（tar 无细分进度，看左边秒表）');
+        /* 🔴 包内名 openlist-android-arm64 与下游不符且 comm 截断会漏检，mv 归一化 */
         return shell('mkdir -p '+OL_DIR+' && tar -zxf /data/kano_openlist.tar.gz -C '+OL_DIR+' 2>&1 | tail -3; '+
+          'cd '+OL_DIR+' && for f in openlist-android-arm64 alist-android-arm64 alist openlist.bak; do '+
+          'if [ -f "$f" ] && [ "$f" != openlist ]; then mv -f "$f" openlist; echo "NORM=$f"; break; fi; done; '+
           'chmod 777 -Rf '+OL_DIR+'; test -x '+OL_DIR+'openlist && echo EXTRACTED');
       })
       .then(function(o){
+        var nm=(String(o).match(/NORM=(\S+)/)||[])[1];
+        if(nm) logLine('[OpenList] '+nm+' → openlist');
         if(!/EXTRACTED/.test(String(o))) throw new Error('解压失败或可执行文件缺失：'+String(o||'').replace(/\n/g,' ').slice(0,160));
         progIndet('openlist',88,'写入配置','注册开机自启 + 初始化管理员口令');
         return shell('grep -qxF "'+OL_START+'" '+OL_BOOT+' || echo "'+OL_START+'" >> '+OL_BOOT+'; '+
@@ -13816,19 +13824,13 @@ return qrcode;
     var S=SV2.sfrp||(SV2.sfrp={links:[]});
     if(S.grdy) return Promise.resolve();
     if(S.gp) return S.gp;
-    /* 🔴 v2.4.28：未安装就一步都不许动设备。
-       这里原本无条件写 sfrp_guard.sh 并把守护拉起来，于是「只用 Magisk 版 frpc、没装本插件」的
-       用户只要点进樱花映射页，AURA 就会凭空建 /data/kano_sakurafrp 并起一个守护进程，
-       还会每 3 分钟探测一次公网。那是越权写入，不是「顺手帮忙」。
-       🔴 故意不写 S.grdy=true：安装完成后 inst 变 true，下一次进页面要能正常部署，
-          把结果缓存下来会让「刚装好却起不来守护」变成一个更难查的问题。 */
+    /* 🔴 v2.4.28：未安装不写设备；故意不缓存 grdy，装好后下次进页面仍可部署。 */
     var st0=SV2.stat.sfrp;
     if(st0&&st0.inst===false) return Promise.resolve();
-    /* 一条命令办四件事：①比对 guard-ver，不符就覆盖 ②守护在跑且脚本刚换（N=1）则先停再起
-       ③没在跑就拉起来 ④用户手动停过（guard.stopped）则尊重意图，不拉起。
-       🔴 早期版本只在「脚本是新的」时拉起守护：脚本已是当前版但守护没在跑时
-          （重启后未进开机自启）页面永远起不动它，这个分支已补齐。 */
-    S.gp=shell('N=0; if [ -f '+SF_GUARD+' ] && grep -q "guard-ver: 4" '+SF_GUARD+' 2>/dev/null; then :; '
+    /* 🔴 frpc + service.sh 就位才部署守护 */
+    S.gp=shell('if [ ! -x '+SF_DIR+'frpc ]; then echo NOBIN; exit 0; fi; '
+      +'if [ ! -s '+SF_DIR+'service.sh ]; then echo NOSVC; exit 0; fi; '
+      +'N=0; if [ -f '+SF_GUARD+' ] && grep -q "guard-ver: 4" '+SF_GUARD+' 2>/dev/null; then :; '
       +'else cat > '+SF_GUARD+" <<'SFGEOF'\n"+ulz(SF_G)+"\nSFGEOF\n"+'chmod 700 '+SF_GUARD+'; N=1; echo NEW; fi; '
       +'if pgrep -f "kano_sakurafrp/sfrp_guard[.]sh loop" >/dev/null 2>&1; then '
         +'if [ "$N" = "1" ]; then sh '+SF_GUARD+' guard stop; sleep 1; sh '+SF_GUARD+' guard start; echo RESTART; '
@@ -13837,6 +13839,9 @@ return qrcode;
         +'else sh '+SF_GUARD+' guard start; echo STARTED; fi; fi')
       .then(function(o){
         var t=String(o||'');
+        /* 未装/半装：不落 grdy，装好后下次进页面可以正常部署 */
+        if(/NOBIN/.test(t)){ S.gp=null; logLine('[樱花映射] frpc 未安装，跳过守护部署（不写设备）'); return; }
+        if(/NOSVC/.test(t)){ S.gp=null; logLine('[樱花映射] service.sh 缺失，跳过守护部署（重新安装可自动补齐）'); return; }
         if(/NEW/.test(t)) logLine('[樱花映射] 断联守护已部署 '+SF_GUARD);
         if(/RESTART/.test(t)) logLine('[樱花映射] 守护已按新脚本重启');
         if(/STARTED/.test(t)) logLine('[樱花映射] 断联守护已启动（每 3 分钟端到端探测公网）');
@@ -13862,7 +13867,30 @@ return qrcode;
       var d=sv2Def(SV2.cur); if(d) setTimeout(function(){ sv2Load(d,'stat'); },600);
     }).catch(errH('执行失败'));
   }
-  var SF_BASE='https://nya.globalslb.net/natfrp/client/frpc/0.51.0-sakura-14';
+  /* 🔴 v2.5.3：0.51.0-sakura-14 已 404（实得 146 B HTML）；15.1/15 的完整版与 noupx
+     均 206 + arm64 ELF，故做「版本×变体」4 源顺序兜底。 */
+  var SF_HOST='https://nya.globalslb.net/natfrp/client/frpc/';
+  var SF_VER=['0.51.0-sakura-15.1','0.51.0-sakura-15'];
+  function sfUrls(){
+    var o=[];
+    /* 完整版优先跨版本，noupx 作同版本兜底 */
+    ['frpc_linux_arm64','frpc_linux_arm64_noupx'].forEach(function(f){
+      SF_VER.forEach(function(v){ o.push(SF_HOST+v+'/'+f); });
+    });
+    return o;
+  }
+  /* 顺序试源，任一成功即返回；全失败才抛错 */
+  function sfDl(urls,i,onp){
+    i=i||0;
+    if(i>=urls.length) return Promise.reject(new Error('全部下载源均不可用（已试 '+urls.length+' 个，上游可能又换了版本目录）'));
+    return dlBg(urls[i], SF_DIR+'frpc', 5000000, 'sf', onp(i?('备源 '+i):'')).catch(function(e){
+      logLine('[樱花映射] 源不可用：'+urls[i]+'\n'+(e&&e.message||e));
+      if(i+1<urls.length){
+        progIndet('sfrp',4,'切换备用源','第 '+(i+1)+' 个源失败，改试第 '+(i+2)+' 个（共 '+urls.length+' 个）');
+      }
+      return sfDl(urls,i+1,onp);
+    });
+  }
   var SF_SVC=SF_DIR+'service.sh';
   var SF_SH='#!/bin/sh\nDIR='+SF_DIR+'\nBIN=$DIR/frpc\nPIDFILE=$DIR/frpc.pid\nLOGFILE=$DIR/frpc.log\n'+
     'is_running(){ [ -f "$PIDFILE" ] && kill -0 $(cat $PIDFILE) 2>/dev/null; }\n'+
@@ -13881,7 +13909,7 @@ return qrcode;
     progClear('sfrp');
     progSet('sfrp',2,'准备安装','创建目录 '+SF_DIR);
     logLine('[樱花映射] 开始安装 frpc');
-    var U1=SF_BASE+'/frpc_linux_arm64', U2=SF_BASE+'/frpc_linux_arm64_noupx';
+    var U1=sfUrls()[0], urls=sfUrls();
     var est=14000000;
     function onp(tag){
       return { total:est, onProgress:function(done,tot){
@@ -13894,14 +13922,8 @@ return qrcode;
       .then(function(total){
         if(total){ est=total; }
         progSet('sfrp',4,'下载安装包','0 B / '+(total?'':'约 ')+bytes(est));
-        /* 主源 nya.globalslb.net 实测 206 + ELF；备源 getfrp.sh 实测 000（已失效），
-           换成官方同版本的 noupx 变体。两级都失败就中止，不再像旧版那样
-           touch 一个空文件当装好了（启动时才报「frpc 未安装」，更误导）。 */
-        return dlBg(U1, SF_DIR+'frpc', 5000000, 'sf', onp('')).catch(function(e){
-          logLine('[樱花映射] 主源失败：'+(e&&e.message||e)+'，改用 noupx 变体');
-          progIndet('sfrp',4,'切换备源','主源不可用，改用官方同版本 _noupx 变体重新下载');
-          return dlBg(U2, SF_DIR+'frpc', 5000000, 'sf', onp('备源'));
-        });
+        /* sfUrls 给 4 个候选，sfDl 逐个试，>5 MB 即成功；全失败才中止，不造空文件 */
+        return sfDl(urls,0,onp);
       })
       .then(function(sz){
         progSet('sfrp',70,'校验安装包','已下载 '+bytes(sz)+'，验证 ELF 头');
