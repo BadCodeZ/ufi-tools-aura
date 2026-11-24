@@ -3298,9 +3298,7 @@ details.a2-behmore[open] summary::before{content:"- ";}
     },280);
   }
   function secGuide(k){
-    /* 🔴 v2.5.3：AGH 检测读 yaml 的 users.password（官方面板登录口令），
-       旧版把用户引导到 #adg-cp（那是 AURA 访问 ADG API 的凭据缓存 .aura/cred），两者无关，
-       导致「改了没用 / 检测不了」。改为打开官方面板 Web UI 改真正的登录口令。 */
+    /* AGH 检测读 yaml 的 users.password，不是 #adg-cp 凭据 */
     var x=k==='agh'
       ? {n:'AdGuardHome',d:'root / root',url:'http://'+location.hostname+':'+PORT_ADG+'/',
          tip:'在官方面板「设置 › 常规设置 › 管理员密码」修改。改完若 AURA 读不到 ADG 数据，再去「服务 › 广告拦截 › 运维 › API 凭据」同步新口令。'}
@@ -3322,8 +3320,7 @@ details.a2-behmore[open] summary::before{content:"- ";}
   }
   function secRefresh(force){
     var bar=document.querySelector('.a2-secbar'); if(!bar) return;
-    /* v2.5.3：ADG 面板 v0.107.71 无改密入口、设备无 bcrypt 工具，留提示只会误导用户；
-       检测链路保留（基线仍在），只从告警条移除 ADG 展示。详见更新说明。 */
+    /* ADG 无改密入口，保留检测 */
     var a=secWeak().filter(function(x){ return x.k!=='agh'; }), sig=a.map(function(x){ return x.k+':'+x.st; }).join(',');
     if(!force&&sig===SEC_SIG) return;
     SEC_SIG=sig;
@@ -9662,7 +9659,7 @@ details.a2-behmore[open] summary::before{content:"- ";}
   var SVC_PROBE={
     adg:{bin:['/data/agh/agh/bin/AdGuardHome','/data/agh/AdGuardHome'],pat:['AdGuardHome'],flag:'-x',
       dir:'/data/agh'},
-      /* 🔴 v2.5.3：兼容原始名 openlist-android-arm64，规范名优先 */
+      /* 兼容 openlist-android-arm64 */
     openlist:{bin:['/data/openlist/openlist','/data/openlist/openlist-android-arm64',
       '/data/openlist/alist-android-arm64','/data/openlist/bin/openlist','/data/alist/alist',
       '/sdcard/openlist/openlist','/data/local/openlist/openlist','/data/local/tmp/openlist'],
@@ -10356,7 +10353,7 @@ details.a2-behmore[open] summary::before{content:"- ";}
         '<div class="a2-btns">'+
         btn('更新全部规则','adgact','refresh-filters','确定立即更新全部过滤器？会重新下载订阅源',true)+
         btn('打开官方面板','adgact','open')+'</div>'+
-        /* V2：清空日志不可恢复，沉到卡尾 */
+        /* 清空日志不可恢复 */
         '<div class="a2-btns is-tail">'+
         btn('清空查询日志','adgact','clear-log','确定清空查询日志？历史查询明细不可恢复',true)+'</div>','只读',true);
   }
@@ -10411,7 +10408,7 @@ details.a2-behmore[open] summary::before{content:"- ";}
           {sure:'确定安装 AdGuardHome？会联网下载约 10 MB 的模块包，再重建 /data/agh（含配置与日志）；'+
             '期间全屋 DNS 中断，完成后自动启动',
            danger:true,svc:'adg-install'})+'</div>'+
-        /* V2：卸载是不可逆动作，单独沉到卡尾虚线区，避免与「重装」误点 */
+        /* 卸载不可逆，避免与「重装」误点 */
         '<div class="a2-btns is-tail">'+
         btn('卸载','adgact','uninstall',
           {sure:'确定卸载 AdGuardHome？会停止服务、删除 /data/agh 并清理 iptables 规则',
@@ -10435,7 +10432,7 @@ details.a2-behmore[open] summary::before{content:"- ";}
            当成主区的子元素吞进去，虚线分隔失效、破坏性按钮与只读按钮又挤回同一行。 */
         '<div class="a2-btns">'+btn('导出到手机','adgyaml','export')+
         btn('打开管理页','adgweb')+'</div>'+
-        /* V2：覆盖类动作单独沉底，与只读的「导出 / 打开」拉开距离 */
+        /* 覆盖类动作与只读操作分开 */
         '<div class="a2-btns is-tail">'+
         btn('从手机导入','adgyaml','import','确定用本地 yaml 覆盖设备配置？导入期间全屋 DNS 会中断',true)+'</div>','写','all')+
       group('凭据与日志')+
@@ -10902,20 +10899,19 @@ details.a2-behmore[open] summary::before{content:"- ";}
         '<div class="a2-btns">'+btn('拉取隧道列表','sfpull')+'</div>','只读',true);
     if(t==='conf') return group('接入配置')+
       card('访问密钥','<div data-slot="sf-key">'+skel(2)+'</div>'+
-        field('访问密钥（natfrp.com → 用户中心）','<input class="a2-inp" id="sf-keyin" placeholder="字母数字 _ . 至少 6 位">')+
+        field('访问密钥（natfrp.com → 用户中心）','<input class="a2-inp" id="sf-keyin" placeholder="token 或 token:隧道ID">')+
         '<div class="a2-btns">'+btn('读取','sfkeyload')+'</div>'+
-        /* V2：写密钥会覆盖 args.txt */
+        /* 覆盖 args.txt */
         '<div class="a2-btns is-tail">'+
         btn('保存','sfkeysave','','确定写入访问密钥？会覆盖 args.txt',true)+'</div>','写')+
       card('frpc.ini','<div data-slot="sf-ini">'+skel(2)+'</div>'+
         '<textarea class="a2-ta" id="sf-inita" style="height:180px" placeholder="[common]&#10;user = xxx&#10;[tunnel]&#10;type = tcp"></textarea>'+
         '<div class="a2-btns">'+btn('读取配置','sfiniload')+'</div>'+
-        /* V2：覆盖配置会导致穿透失败，单独沉底 */
+        /* 覆盖配置会导致穿透失败 */
         '<div class="a2-btns is-tail">'+
         btn('保存配置','sfinisave','','确定覆盖 frpc.ini？错误配置会导致穿透失败',true)+'</div>','写',true)+
       group('快速启动')+
-      card('隧道 ID','<div class="a2-note">不走配置文件，直接用官方快速启动（-f 隧道ID）；'+
-        '启动脚本优先用 frpc.ini，清空配置后才走密钥 + 隧道 ID。</div>'+
+      card('隧道 ID','<div class="a2-note">官方快速启动需要 token:隧道ID；frpc.ini 优先，清空后才走快速模式。</div>'+
         field('隧道 ID（逗号分隔）','<input class="a2-inp" id="sf-qid" placeholder="29270497">')+
         '<div class="a2-btns">'+btn('快速启动','sfquick','','确定用该隧道 ID 快速启动？',false)+'</div>','写','all');
     return group('后台日志')+
@@ -10985,7 +10981,8 @@ details.a2-behmore[open] summary::before{content:"- ";}
   function sv2SfrpStat(){
     /* 先确保守护脚本就位（幂等），再一把把 frpc 状态 / 隧道 / 日志尾部 / 守护状态取回来 */
     return sfReady().then(function(){
-      return shell(psQ('kano_sakurafrp/frpc')+'; '+
+      /* 相对路径启动时 -f 会漏检，统一用 -x frpc */
+      return shell(psQ('frpc','-x')+'; '+
         'echo "INST=$([ -x '+SF_DIR+'frpc ] && echo 1 || echo 0)"; '+
         'echo "BOOT=$(grep -c "kano_sakurafrp" /sdcard/ufi_tools_boot.sh 2>/dev/null)"; '+
         'echo "MODE=$([ -s '+SF_DIR+'frpc.ini ] && echo 配置 || echo 密钥)"; '+
@@ -11139,7 +11136,7 @@ details.a2-behmore[open] summary::before{content:"- ";}
         field('admin 口令（仅存本机浏览器，走设备内 curl 桥调用 API）',
           '<input class="a2-inp" id="ol-apw" type="password" placeholder="OpenList admin 口令">')+
         '<div class="a2-btns">'+btn('登录并测试','ollogin')+'</div>'+
-        /* V2：清除本机凭据属于不可逆动作，沉到卡尾 */
+        /* 清除本机凭据不可逆 */
         '<div class="a2-btns is-tail">'+
         btn('清除本机口令','ollogout','','确定清除本机保存的 OpenList 口令与令牌？',true)+'</div>','写')+
       group('站点信息')+
@@ -11197,7 +11194,7 @@ details.a2-behmore[open] summary::before{content:"- ";}
     if(s.hasdl&&s.phase!=='ready'&&s.phase!=='download') bs+=btn('校验已有安装包','olupvfy');
     if(s.phase==='ready') bs+=btn('安装更新','olupinst','','确定安装 v'+s.latest+'？服务会中断数秒，配置与数据不受影响',true);
     bs+=btn('保存镜像设置','olupmx');
-    /* V2：恢复备份与清理临时文件都会覆盖/删除设备文件，收进尾区 */
+    /* 恢复备份与清理临时文件会覆盖/删除设备文件 */
     var tail='';
     if(s.bak&&s.phase!=='install') tail+=btn('恢复备份版本','oluprb','','确定恢复 '+s.bak.split('/').pop()+'？当前版本会被覆盖',true);
     tail+=btn('清理临时文件','olupclean','','确定清理下载临时目录？未安装的安装包会被删除',true);
@@ -11801,7 +11798,7 @@ details.a2-behmore[open] summary::before{content:"- ";}
       card('smb.conf','<div data-slot="smb-raw">'+skel(3)+'</div>'+
         '<textarea class="a2-ta" id="smb-ta" style="height:230px"></textarea>'+
         '<div class="a2-btns">'+btn('读取','smbload')+'</div>'+
-        /* V2：保存会覆盖配置并重启服务，语法错就直接断掉共享，单独沉底 */
+        /* 保存会覆盖配置并重启服务，语法错会断共享 */
         '<div class="a2-btns is-tail">'+
         btn('保存并重启','smbsave','','确定覆盖 smb.conf 并重启 smbd？语法错误会导致共享不可用',true)+'</div>','危险','all');
     return group('后台日志')+
@@ -12089,7 +12086,7 @@ details.a2-behmore[open] summary::before{content:"- ";}
           btn('立即续期','wpact','renew','立即执行完整补登：向账号发送短信验证码并从本机 SIM 自动读取，约 1-2 分钟。确定继续？',true)})+
       card('守护进程','<div data-slot="wp-guard">'+skel(2)+'</div>'+
         '<div class="a2-btns">'+btn('启动守护','wpact','guard-start')+'</div>'+
-        /* V2：停止守护会让自动补登彻底停下，单独沉底 */
+        /* 停止守护会停掉自动补登 */
         '<div class="a2-btns is-tail">'+
         btn('停止守护','wpact','guard-stop','确定停止守护？将不再自动检测挂载与补登',true)+'</div>','写')+
       card('开机自启','<div data-slot="wp-boot">'+skel(2)+'</div>'+
@@ -12649,7 +12646,7 @@ return qrcode;
         '<div class="a2-btns">'+btn('刷新容量','ucact','cap')+'</div>','只读')+
       card('守护进程','<div data-slot="uc-guard">'+skel(2)+'</div>'+
         '<div class="a2-btns">'+btn('启动守护','ucact','guard-start')+'</div>'+
-        /* V2：停止守护会让挂载失效无人发现，单独沉底 */
+        /* 停止守护会让挂载失效无人发现 */
         '<div class="a2-btns is-tail">'+
         btn('停止守护','ucact','guard-stop','确定停止 UC 健康体检？将不再自动发现挂载失效',true)+'</div>','写')+
       card('开机自启','<div data-slot="uc-boot">'+skel(2)+'</div>'+
@@ -12866,7 +12863,11 @@ return qrcode;
        失败了也不该按崩溃报警，该提示「停止没生效」，这是两种不同的错。 */
     svcOffSet(id, act==='stop');
     shell(c).then(function(o){
-      toast('已执行','is-ok'); logLine('[服务] '+id+' '+act+'\n'+String(o||'').slice(0,300));
+      /* 🔴 root_shell 不给退出码，按输出失败标记识别，避免一律 toast「已执行」 */
+      var bad=/错误:|启动失败|not found|No such file/i.test(String(o||''));
+      if(id==='sfrp'&&bad){ toast('启动失败：'+String(o||'').trim().slice(0,80),'is-bad'); }
+      else toast('已执行','is-ok');
+      logLine('[服务] '+id+' '+act+'\n'+String(o||'').slice(0,300));
       var d=sv2Def(SV2.cur); if(d) setTimeout(function(){ sv2Load(d,sv2Tab(d)); },800);
     }).catch(errH('执行失败'));
   }
@@ -13243,7 +13244,7 @@ return qrcode;
   }
   function sv2SfKeySave(){
     var k=String((($('#sf-keyin')||{}).value)||'').trim();
-    if(!/^[A-Za-z0-9_.]{6,}$/.test(k)){ toast('密钥格式错误（字母数字 _ . 至少 6 位）','is-bad'); return; }
+    if(!/^[A-Za-z0-9_.]{6,}(:\d+(,\d+)*)?$/.test(k)){ toast('密钥格式错误（token 或 token:隧道ID）','is-bad'); return; }
     shell("printf %s '"+b64u(k)+"' | base64 -d > "+SF_DIR+"args.txt && chmod 600 "+SF_DIR+"args.txt && echo ok")
       .then(function(){ toast('密钥已保存（600）','is-ok'); sv2SfrpLoad('conf'); })
       .catch(errH('保存失败'));
@@ -13257,10 +13258,20 @@ return qrcode;
   function sv2SfQuick(){
     var id=String((($('#sf-qid')||{}).value)||'').trim();
     if(!/^\d+(,\d+)*$/.test(id)){ toast('隧道 ID 格式错误（数字，逗号分隔）','is-bad'); return; }
+    /* -f 需 token:ID */
     shell('sh '+SF_DIR+'service.sh stop >/dev/null 2>&1; sleep 1; '+
-      'cd '+SF_DIR+' && nohup ./frpc -f '+id+' >> '+SF_DIR+'frpc.log 2>&1 & sleep 2; echo started')
-      .then(function(){ toast('已按隧道 ID 启动','is-ok'); sv2SfrpStat(); })
-      .catch(errH('启动失败'));
+      'K=$(head -n1 '+SF_DIR+'args.txt 2>/dev/null | cut -d: -f1); '+
+      'if [ -z "$K" ]; then echo "错误: 请先保存访问密钥"; exit 1; fi; '+
+      'nohup '+SF_DIR+'frpc -f '+shq('$K:'+id)+' >> '+SF_DIR+'frpc.log 2>&1 & '+
+      'printf %s '+shq(id)+' > '+SF_DIR+'qid.txt; chmod 600 '+SF_DIR+'qid.txt; '+
+      'echo $! > '+SF_DIR+'frpc.pid; sleep 3; '+
+      'if kill -0 $(cat '+SF_DIR+'frpc.pid) 2>/dev/null; then echo "OK:$(cat '+SF_DIR+'frpc.pid)"; '+
+      'else echo "FAIL"; tail -3 '+SF_DIR+'frpc.log; exit 1; fi')
+      .then(function(o){
+        if(!/OK:/.test(String(o))) throw new Error('frpc 启动失败');
+        toast('已按隧道 ID 启动','is-ok'); sv2SfrpStat();
+      })
+      .catch(function(e){ toast('启动失败：'+(e.message||e),'is-bad'); });
   }
   function sv2OlSetPw(){
     var pw=String((($('#ol-pw')||{}).value)||'').trim();
@@ -13446,10 +13457,7 @@ return qrcode;
           '密钥':(key?esc(key.slice(0,4)+'****'+key.slice(-2)):'<span class="a2-badge is-off">未设置</span>')}));
       }).catch(failH('sfrp'));
   }
-  /* v2.3.2：sfLoad/sfSave/sfIniLoad/sfIniSave 已删：读写旧面板 #a2-sf（0 处定义），
-     且无任何 data-a 按钮触发。SV2 conf 面板的等价功能：
-     密钥读 = perform 'sfkeyload'（13615，读 #sf-keyin）；密钥写 = sv2SfKeySave（10048）；
-     frpc.ini 读 = perform 'sfiniload' 内联版（读 #sf-inita）；frpc.ini 写 = sv2SfIniSave（10055）。 */
+  /* 旧 sfLoad/sfSave/sfIniLoad/sfIniSave 已删，SV2 conf 面板是唯一入口 */
   function loadSvc(){
     failSlot('svc','读取中…');
     shell('for p in smbd openlist frpc AdGuardHome dnsmasq; do printf "%s|" "$p"; '+
@@ -13824,13 +13832,16 @@ return qrcode;
     var S=SV2.sfrp||(SV2.sfrp={links:[]});
     if(S.grdy) return Promise.resolve();
     if(S.gp) return S.gp;
-    /* 🔴 v2.4.28：未安装不写设备；故意不缓存 grdy，装好后下次进页面仍可部署。 */
+    /* 未安装不写设备；不缓存 grdy */
     var st0=SV2.stat.sfrp;
     if(st0&&st0.inst===false) return Promise.resolve();
-    /* 🔴 frpc + service.sh 就位才部署守护 */
+    /* 就位才部署 */
     S.gp=shell('if [ ! -x '+SF_DIR+'frpc ]; then echo NOBIN; exit 0; fi; '
       +'if [ ! -s '+SF_DIR+'service.sh ]; then echo NOSVC; exit 0; fi; '
-      +'N=0; if [ -f '+SF_GUARD+' ] && grep -q "guard-ver: 4" '+SF_GUARD+' 2>/dev/null; then :; '
+      /* 旧脚本自动升级 */
+      +'N=0; if grep -q "service-ver: 2" '+SF_DIR+'service.sh 2>/dev/null; then :; '
+      +'else printf %s \''+b64u(SF_SH)+'\' | base64 -d > '+SF_SVC+' && chmod 700 '+SF_SVC+'; N=1; echo SVC_NEW; fi; '
+      +'if [ -f '+SF_GUARD+' ] && grep -q "guard-ver: 4" '+SF_GUARD+' 2>/dev/null; then :; '
       +'else cat > '+SF_GUARD+" <<'SFGEOF'\n"+ulz(SF_G)+"\nSFGEOF\n"+'chmod 700 '+SF_GUARD+'; N=1; echo NEW; fi; '
       +'if pgrep -f "kano_sakurafrp/sfrp_guard[.]sh loop" >/dev/null 2>&1; then '
         +'if [ "$N" = "1" ]; then sh '+SF_GUARD+' guard stop; sleep 1; sh '+SF_GUARD+' guard start; echo RESTART; '
@@ -13842,6 +13853,7 @@ return qrcode;
         /* 未装/半装：不落 grdy，装好后下次进页面可以正常部署 */
         if(/NOBIN/.test(t)){ S.gp=null; logLine('[樱花映射] frpc 未安装，跳过守护部署（不写设备）'); return; }
         if(/NOSVC/.test(t)){ S.gp=null; logLine('[樱花映射] service.sh 缺失，跳过守护部署（重新安装可自动补齐）'); return; }
+        if(/SVC_NEW/.test(t)) logLine('[樱花映射] service.sh 已升级到 v2（修正 -f 参数）');
         if(/NEW/.test(t)) logLine('[樱花映射] 断联守护已部署 '+SF_GUARD);
         if(/RESTART/.test(t)) logLine('[樱花映射] 守护已按新脚本重启');
         if(/STARTED/.test(t)) logLine('[樱花映射] 断联守护已启动（每 3 分钟端到端探测公网）');
@@ -13867,8 +13879,7 @@ return qrcode;
       var d=sv2Def(SV2.cur); if(d) setTimeout(function(){ sv2Load(d,'stat'); },600);
     }).catch(errH('执行失败'));
   }
-  /* 🔴 v2.5.3：0.51.0-sakura-14 已 404（实得 146 B HTML）；15.1/15 的完整版与 noupx
-     均 206 + arm64 ELF，故做「版本×变体」4 源顺序兜底。 */
+  /* 🔴 14 已 404，4 源兜底 */
   var SF_HOST='https://nya.globalslb.net/natfrp/client/frpc/';
   var SF_VER=['0.51.0-sakura-15.1','0.51.0-sakura-15'];
   function sfUrls(){
@@ -13879,7 +13890,7 @@ return qrcode;
     });
     return o;
   }
-  /* 顺序试源，任一成功即返回；全失败才抛错 */
+  /* 试源 */
   function sfDl(urls,i,onp){
     i=i||0;
     if(i>=urls.length) return Promise.reject(new Error('全部下载源均不可用（已试 '+urls.length+' 个，上游可能又换了版本目录）'));
@@ -13892,17 +13903,22 @@ return qrcode;
     });
   }
   var SF_SVC=SF_DIR+'service.sh';
-  var SF_SH='#!/bin/sh\nDIR='+SF_DIR+'\nBIN=$DIR/frpc\nPIDFILE=$DIR/frpc.pid\nLOGFILE=$DIR/frpc.log\n'+
+  /* 🔴 service-ver 幂等升级；快速模式补 ID */
+  var SF_SH='#!/bin/sh\n# service-ver: 2\nDIR='+SF_DIR+'\nBIN=$DIR/frpc\nPIDFILE=$DIR/frpc.pid\nLOGFILE=$DIR/frpc.log\n'+
     'is_running(){ [ -f "$PIDFILE" ] && kill -0 $(cat $PIDFILE) 2>/dev/null; }\n'+
     'start(){ if is_running; then echo "frpc已在运行"; return 0; fi\n'+
     '  if [ ! -x "$BIN" ]; then echo "错误: frpc 未安装"; return 1; fi\n'+
     '  MODE=; if [ -s "$DIR/frpc.ini" ]; then MODE=config; elif [ -s "$DIR/args.txt" ]; then MODE=quick; else echo "错误: 请先填写访问密钥或配置文件"; return 1; fi\n'+
-    '  if [ "$MODE" = config ]; then nohup $BIN -c $DIR/frpc.ini >> $LOGFILE 2>&1 & else nohup $BIN -f $(head -n1 $DIR/args.txt) >> $LOGFILE 2>&1 & fi\n'+
-    '  echo $! > $PIDFILE; sleep 2; if is_running; then echo "frpc已启动 (模式=$MODE)"; else echo "frpc启动失败"; return 1; fi; }\n'+
+    '  if [ "$MODE" = config ]; then nohup $BIN -c $DIR/frpc.ini >> $LOGFILE 2>&1 & \n'+
+    '  else A=$(head -n1 "$DIR/args.txt"); case "$A" in *:*) F="$A";; *) F="$A:$(head -n1 "$DIR/qid.txt" 2>/dev/null)";; esac; '+
+    '    [ -n "$A" ] && [ "${F##*:}" != "$F" ] || { echo "错误: 请先填写访问密钥和隧道 ID"; return 1; }; '+
+    '    nohup $BIN -f "$F" >> $LOGFILE 2>&1 & fi\n'+
+    '  echo $! > $PIDFILE; sleep 3; if is_running; then echo "frpc已启动 (模式=$MODE)"; else echo "frpc启动失败"; return 1; fi; }\n'+
     'stop(){ if [ -f "$PIDFILE" ]; then kill $(cat $PIDFILE) 2>/dev/null; rm -f "$PIDFILE"; fi; pkill -f kano_sakurafrp/frpc 2>/dev/null; sleep 1; echo "frpc已停止"; }\n'+
     'status(){ if is_running; then echo "RUNNING=1"; echo "PID=$(cat $PIDFILE)"; else echo "RUNNING=0"; fi; echo "VERSION=$($BIN -v 2>&1|head -n1)"; }\n'+
+    'ver(){ grep "service-ver" "$0" | head -n1; }\n'+
     'restart(){ stop; sleep 1; start; }\n'+
-    'case "$1" in start) start;; stop) stop;; restart) restart;; status) status;; *) echo "用法: $0 {start|stop|restart|status}";; esac\n';
+    'case "$1" in start) start;; stop) stop;; restart) restart;; status) status;; ver) ver;; *) echo "用法: $0 {start|stop|restart|status}";; esac\n';
   function sfInst(){
     if(SV2.sfBusy) return;
     SV2.sfBusy=true;
@@ -14009,8 +14025,7 @@ return qrcode;
         return shell('sh '+SF_SVC+' start 2>&1').then(function(s){ toast('已启动 frpc','is-ok'); fillSlot('out','$ 启动 frpc\n'+String(s)); loadSfrp(); });
       }).catch(errH('失败'));
   }
-  /* v2.3.2：sfQuick 已删：读旧面板 #a2-sfq / #a2-sf（0 处定义），静默失灵。
-     「快速启动」按钮的等价实现 = sv2SfQuick（10061，读 SV2 conf 面板的 #sf-qid）。 */
+  /* 快速启动入口 = sv2SfQuick（SV2 conf 面板 #sf-qid） */
 
   /* ---- CPU 调节器（接管原 06 号插件全部能力） ---- */
   var CPU_GOVS=['userspace','schedutil','ondemand','performance','powersave','conservative'];
@@ -20135,9 +20150,7 @@ function viewSettings(el){
     }
     openLegacy(req.b,req.m,req.t,req.wide,req.kind==='弹窗'?'modal':'inline',req.card);
   }
-  /* openSetItem 已删除（v2.3.2）：perform 的 setopen 分支已内联全部逻辑，
-     本旧副本只被 perform 末尾同名分支调用（顺序 if 链后者不可达），属死代码。
-     其「短信转发走 openFwdModal」的特判已补回 setopen 分支本体。 */
+  /* openSetItem 已删除，setopen 分支已内联 */
   function act(n,a){
     if(n.getAttribute('data-sure')==='1'){
       var tip=n.getAttribute('data-tip')||'确定执行该操作？';
@@ -20502,7 +20515,8 @@ function perform(a,n){
         toast(v?'密钥已读取':'未找到密钥','is-ok');
       }).catch(errH('读取失败')); return; }
     if(a==='sfiniload'){ shell('cat '+SF_DIR+'frpc.ini 2>/dev/null').then(function(o){
-      var ta2=$('#sf-inita'); if(ta2){ ta2.value=String(o||''); toast('配置已读取','is-ok'); }
+      var v=String(o||''), ta2=$('#sf-inita');
+      if(ta2){ ta2.value=v.trim()?v:'[common]\nuser = your_token\nserver_addr = natfrp.com\nserver_port = 7000\n[tunnel]\ntype = tcp\nlocal_port = 80\nremote_port = 8080'; toast('配置已读取','is-ok'); }
     }).catch(errH('读取失败')); return; }
     if(a==='olrawload'){ shell('base64 '+olData()+'/config.json 2>/dev/null | tr -d "\\n"')
       .then(function(b){ fillSlot('ol-raw','<pre class="a2-logv" style="height:180px">'+

@@ -127,8 +127,8 @@ UFI-TOOLS 存在两条不同 API 内核的产品线。AURA 启动时探测版别
 
 | 文件 | 体积 | MD5 前 8 | 用途 |
 |---|---|---|---|
-| `dist/ufitools-aura-v2.5.3.js` | 839,826 B | `cb33c331` | **推荐安装**。CSS 与 JS 均已压缩（terser，仅结构化简，不改字面量） |
-| `ufitools-aura-v2.js` | 1,384,815 B | `7a2b423c` | 完整源码，含全部中文注释。保留用于阅读、审计与二次开发 |
+| `dist/ufitools-aura-v2.5.3.js` | 841,084 B | `636623bc` | **推荐安装**。CSS 与 JS 均已压缩（terser，仅结构化简，不改字面量） |
+| `ufitools-aura-v2.js` | 1,384,879 B | `85dcd378` | 完整源码，含全部中文注释。保留用于阅读、审计与二次开发 |
 
 两者功能完全一致，仅注释与空白不同。注入使用 `<script id="aura2-engine">` + `<style id="aura2-css">` 两段，遵循官方 `<!-- [KANO_PLUGIN_START] ... [KANO_PLUGIN_END] -->` 块规范，重复注入幂等。
 
