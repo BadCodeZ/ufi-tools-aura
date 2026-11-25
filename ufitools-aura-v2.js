@@ -2299,8 +2299,10 @@ html.a2-dark .a2-tgl.is-on{color:var(--a2-brand);}
 .a2-logv .lg-l.is-ok{color:var(--a2-ok);}
 .a2-log-h{display:flex;align-items:center;gap:var(--a2-sp-2);flex-wrap:wrap;}
 .a2-log-h .a2-note{margin-right:auto;}
-/* 樱花映射 · 隧道访问链接（公网地址卡） */
-a.a2-btn{text-decoration:none;}
+/* 樱花映射 · 隧道访问链接（公网地址卡）
+   🔴 a 没有 button 的默认 border-box：content-box 会把 padding+border 叠到 min-height 上，
+   同排「复制」44px 而「打开」62px。链接按钮必须显式对齐盒模型。 */
+a.a2-btn{text-decoration:none;box-sizing:border-box;}
 .a2-lk{margin-top:var(--a2-sp-2);padding:var(--a2-sp-3);display:grid;gap:6px;
   border:1px solid var(--a2-line);border-radius:var(--a2-r-sm);background:var(--a2-surface-2);}
 .a2-lk:first-child{margin-top:0;}

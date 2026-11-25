@@ -1695,7 +1695,7 @@ color:var(--a2-ink-soft);white-space:pre-wrap;word-break:break-all;}
 .a2-logv .lg-l.is-ok{color:var(--a2-ok);}
 .a2-log-h{display:flex;align-items:center;gap:var(--a2-sp-2);flex-wrap:wrap;}
 .a2-log-h .a2-note{margin-right:auto;}
-a.a2-btn{text-decoration:none;}
+a.a2-btn{text-decoration:none;box-sizing:border-box;}
 .a2-lk{margin-top:var(--a2-sp-2);padding:var(--a2-sp-3);display:grid;gap:6px;
 border:1px solid var(--a2-line);border-radius:var(--a2-r-sm);background:var(--a2-surface-2);}
 .a2-lk:first-child{margin-top:0;}
