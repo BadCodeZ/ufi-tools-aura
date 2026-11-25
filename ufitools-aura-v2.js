@@ -2299,10 +2299,7 @@ html.a2-dark .a2-tgl.is-on{color:var(--a2-brand);}
 .a2-logv .lg-l.is-ok{color:var(--a2-ok);}
 .a2-log-h{display:flex;align-items:center;gap:var(--a2-sp-2);flex-wrap:wrap;}
 .a2-log-h .a2-note{margin-right:auto;}
-/* 樱花映射 · 隧道访问链接（公网地址卡）
-   🔴 a 没有 button 的默认 border-box：content-box 会把 padding+border 叠到 min-height 上，
-   同排「复制」44px 而「打开」62px。链接按钮必须显式对齐盒模型。 */
-a.a2-btn{text-decoration:none;box-sizing:border-box;}
+/* 樱花映射访问链接：打开与复制同为原生 button，共用同一套盒模型与排版 */
 .a2-lk{margin-top:var(--a2-sp-2);padding:var(--a2-sp-3);display:grid;gap:6px;
   border:1px solid var(--a2-line);border-radius:var(--a2-r-sm);background:var(--a2-surface-2);}
 .a2-lk:first-child{margin-top:0;}
@@ -2311,6 +2308,7 @@ a.a2-btn{text-decoration:none;box-sizing:border-box;}
 .a2-lk-u{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:var(--a2-fs-lg);
   font-weight:650;line-height:1.4;word-break:break-all;color:var(--a2-brand-deep);}
 .a2-lk-b{display:flex;align-items:center;gap:var(--a2-sp-2);flex-wrap:wrap;}
+.a2-lk-b>.a2-btn{flex:0 0 auto;}
 .a2-lk-alt{display:flex;align-items:center;gap:var(--a2-sp-1);flex-wrap:wrap;}
 .a2-lk-lt{flex:none;font-size:var(--a2-fs-2xs);color:var(--a2-ink-soft);}
 .a2-lk-chip{appearance:none;max-width:100%;padding:3px 10px;overflow:hidden;text-overflow:ellipsis;
@@ -11071,7 +11069,7 @@ details.a2-behmore[open] summary::before{content:"- ";}
         '<span class="a2-badge">已建立</span></div>'+
         '<div class="a2-lk-u">'+esc(url)+'</div>'+
         '<div class="a2-lk-b">'+btn('复制','sfcopy',url)+
-        (canOpen?'<a class="a2-btn" href="'+esc(isHttp?url:('http://'+url))+'" target="_blank" rel="noopener">打开</a>':'')+
+        (canOpen?btn('打开','sfopen',isHttp?url:('http://'+url)):'')+
         '</div>';
       if(x.alts&&x.alts.length)
         h+='<div class="a2-lk-alt"><span class="a2-lk-lt">备线·点按复制</span>'+
@@ -20309,6 +20307,7 @@ function viewSettings(el){
     sfinisave:sv2SfIniSave,
     sfquick:sv2SfQuick,
     sfcopy:copyTxt,
+    sfopen:function(cmd){ var u=String(cmd||''); if(!/^https?:\/\//i.test(u)){ toast('隧道地址格式不正确','is-bad'); return; } window.open(u,'_blank','noopener'); },
     olsetpw:sv2OlSetPw,
     olsavecfg:sv2OlSave,
     ollogin:olLoginAct,
