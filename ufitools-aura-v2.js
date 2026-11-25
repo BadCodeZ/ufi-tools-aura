@@ -86,7 +86,7 @@ html.aura2-on .a2-shell,html.aura2-on .a2-shell *,
 html.aura2-on .a2-find,html.aura2-on .a2-find *{text-shadow:none;}
 /* ===== 3. 外壳 ===== */
 .a2-shell{position:relative;min-height:100vh;color:var(--a2-ink);
-  background:linear-gradient(rgba(15,23,42,var(--a2-wp-dim,0%)),rgba(15,23,42,var(--a2-wp-dim,0%))),var(--a2-wp,none),var(--a2-bg);
+  background:linear-gradient(180deg,rgba(15,23,42,var(--a2-wp-dim,0%)),rgba(15,23,42,var(--a2-wp-dim,0%))),var(--a2-wp,none),var(--a2-bg);
   background-size:cover;background-position:center;background-attachment:fixed;background-repeat:no-repeat;
   /* 🔴 官方 body 自带 word-break:break-all，会继承到整棵子树（英文单词中间断行、
      NBSP 也拦不住）。必须显式打回 normal，长串由各处 break-word 兜底。 */
@@ -109,7 +109,7 @@ html.aura2-on .a2-find,html.aura2-on .a2-find *{text-shadow:none;}
    🔴 三段式 flex 结构（头 flex:none / 目录 flex:1 / 底 flex:none）不变，
    故 v2.4.50 的「底栏恒贴侧栏底、不随目录滚动」契约照旧成立。 */
 .a2-side{position:sticky;top:0;align-self:flex-start;box-sizing:border-box;height:100vh;flex:0 0 var(--a2-side);width:var(--a2-side);
-  z-index:60;background:color-mix(in srgb,var(--a2-surface) 90%,transparent);backdrop-filter:blur(12px);border-right:1px solid var(--a2-line);
+  z-index:60;background:color-mix(in srgb,var(--a2-surface) 78%,transparent);backdrop-filter:blur(24px) saturate(1.2);border-right:1px solid var(--a2-line);
   padding:0;
   display:flex;flex-direction:column;overflow:hidden;
   transition:flex-basis var(--a2-dur) ease,width var(--a2-dur) ease;}
@@ -255,7 +255,7 @@ html.a2-collapsed .a2-build{display:none;}
    读到「标题 → 状态 → 操作」的动线被打断。16px 与主区卡片间距同尺度，分组一眼可辨。
    🔴 手机段（≤760）另有 gap:8，不跟随本值：窄屏三组会折行，16px 会把行距拉开。 */
 .a2-top{display:flex;align-items:center;gap:var(--a2-sp-4);margin-bottom:var(--a2-sp-4);flex-wrap:wrap;
-  position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--a2-bg) 86%,transparent);backdrop-filter:blur(12px);}
+  position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--a2-bg) 78%,transparent);backdrop-filter:blur(24px) saturate(1.2);}
 /* 吸顶后才出现分隔线，静止时不改变原有视觉 */
 .a2-top.is-stuck{box-shadow:0 1px 0 var(--a2-line),0 8px 16px -14px rgba(0,0,0,.55);}
 .a2-title{font-size:var(--a2-fs-xl);font-weight:700;}
@@ -2749,10 +2749,11 @@ html:not(.a2-dark) [data-skin=v3]{--v3-line:rgba(15,23,42,.06);--v3-line-2:rgba(
    原 D 方案是 20px 圆角 + 双层柔光（in 高光 + 远投影），深色下每张卡都浮起来，
    四卡并排时边界互相争夺视线；预览版只靠一条 1px 描边分层，密度立刻降下来。
    悬停保留「边框提亮」，不再抬投影（没有投影可抬）。 */
-[data-skin=v3] .a2-card{background:var(--v3-surface);border:1px solid var(--v3-line);
+[data-skin=v3] .a2-card{background:color-mix(in srgb,var(--v3-surface) 92%,transparent);backdrop-filter:blur(16px);border:1px solid var(--v3-line);
   border-radius:var(--a2-r-sm);padding:var(--a2-sp-4);
   transition:border-color var(--a2-dur) ease;}
 [data-skin=v3] .a2-card:hover{border-color:var(--v3-line-2);}
+.a2-wp-on .a2-card,.a2-wp-on .a2-top,.a2-wp-on .a2-side{box-shadow:0 8px 32px rgba(0,0,0,.12);}
 /* 标题：不画下边线。D 方案靠字重 + 留白分层，加线会退回"工程面板"的观感。
    字重 700 与服务域一致（已确认保留粗体）。 */
 /* 标题：不画下边线。对齐预览版的重量（13px / 600 / 下距 12）：
@@ -17183,7 +17184,8 @@ return qrcode;
   function wpApply(){
     var r=document.documentElement,on=WP_ST.on&&WP_ST.url,d=r.classList.contains('a2-dark')?WP_ST.dark:WP_ST.light;
     r.style.setProperty('--a2-wp',on?'url("'+WP_ST.url.replace(/"/g,'%22')+'")':'none');
-    r.style.setProperty('--a2-wp-dim',d+'%');
+    r.style.setProperty('--a2-wp-dim',(on?Math.round(d*.65):0)+'%');
+    r.classList.toggle('a2-wp-on',!!on);
   }
   function wpCardHTML(){
     var en=i18nCur()==='en',o=wpLoad(),t=en?function(a,b){return b}:function(a,b){return a};
