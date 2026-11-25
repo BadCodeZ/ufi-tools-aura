@@ -85,7 +85,9 @@ html.aura2-on body{text-shadow:none;}
 html.aura2-on .a2-shell,html.aura2-on .a2-shell *,
 html.aura2-on .a2-find,html.aura2-on .a2-find *{text-shadow:none;}
 /* ===== 3. 外壳 ===== */
-.a2-shell{position:relative;min-height:100vh;background:var(--a2-bg);color:var(--a2-ink);
+.a2-shell{position:relative;min-height:100vh;color:var(--a2-ink);
+  background:linear-gradient(rgba(15,23,42,var(--a2-wp-dim,0%)),rgba(15,23,42,var(--a2-wp-dim,0%))),var(--a2-wp,none),var(--a2-bg);
+  background-size:cover;background-position:center;background-attachment:fixed;background-repeat:no-repeat;
   /* 🔴 官方 body 自带 word-break:break-all，会继承到整棵子树（英文单词中间断行、
      NBSP 也拦不住）。必须显式打回 normal，长串由各处 break-word 兜底。 */
   word-break:normal;overflow-wrap:break-word;
@@ -107,7 +109,7 @@ html.aura2-on .a2-find,html.aura2-on .a2-find *{text-shadow:none;}
    🔴 三段式 flex 结构（头 flex:none / 目录 flex:1 / 底 flex:none）不变，
    故 v2.4.50 的「底栏恒贴侧栏底、不随目录滚动」契约照旧成立。 */
 .a2-side{position:sticky;top:0;align-self:flex-start;box-sizing:border-box;height:100vh;flex:0 0 var(--a2-side);width:var(--a2-side);
-  z-index:60;background:var(--a2-surface);border-right:1px solid var(--a2-line);
+  z-index:60;background:color-mix(in srgb,var(--a2-surface) 90%,transparent);backdrop-filter:blur(12px);border-right:1px solid var(--a2-line);
   padding:0;
   display:flex;flex-direction:column;overflow:hidden;
   transition:flex-basis var(--a2-dur) ease,width var(--a2-dur) ease;}
@@ -253,7 +255,7 @@ html.a2-collapsed .a2-build{display:none;}
    读到「标题 → 状态 → 操作」的动线被打断。16px 与主区卡片间距同尺度，分组一眼可辨。
    🔴 手机段（≤760）另有 gap:8，不跟随本值：窄屏三组会折行，16px 会把行距拉开。 */
 .a2-top{display:flex;align-items:center;gap:var(--a2-sp-4);margin-bottom:var(--a2-sp-4);flex-wrap:wrap;
-  position:sticky;top:0;z-index:40;background:var(--a2-bg);}
+  position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--a2-bg) 86%,transparent);backdrop-filter:blur(12px);}
 /* 吸顶后才出现分隔线，静止时不改变原有视觉 */
 .a2-top.is-stuck{box-shadow:0 1px 0 var(--a2-line),0 8px 16px -14px rgba(0,0,0,.55);}
 .a2-title{font-size:var(--a2-fs-xl);font-weight:700;}
@@ -2905,7 +2907,7 @@ details.a2-behmore[open] summary::before{content:"- ";}
   /* 版本号规则（2026-10-23 定）：大版本号.小版本号.补丁号
      大版本号＝架构级变更；小版本号＝功能更新（v2.1 之后的功能更新升为 v2.2）；补丁号＝修复更新（v2.1 之后的修复更新升为 v2.1.1）。
      补丁号为 0 时省略显示；BUILD 是内部构建批次，与版本号正交，每次发布递增。 */
-  var VER='v2.5.3', BUILD='1117b', LS_TOKEN='aura_token', LS_OFF='aura_off', LS_THEME='aura_theme',
+  var VER='v2.5.4-beta', BUILD='1117c', LS_TOKEN='aura_token', LS_OFF='aura_off', LS_THEME='aura_theme',
       LS_NAV='aura_nav', LS_IV='aura_iv', LS_RATEU='aura_rateu', LS_BATT='aura_batt',
       LS_PRIV='aura_privacy', LS_HIDE='aura_hide', LS_OV='aura_ov',
       OFFICIAL_TOKEN_KEY='kano_sms_token';
@@ -12113,7 +12115,7 @@ details.a2-behmore[open] summary::before{content:"- ";}
         field('联通云盘账号（手机号）','<input class="a2-inp" id="wp-phone" placeholder="11 位手机号" inputmode="numeric">')+
         field('挂载路径','<input class="a2-inp" id="wp-mount" placeholder="/联通云盘">')+
         field('验证码等待（秒）','<input class="a2-inp" id="wp-wait" placeholder="300" inputmode="numeric">')+
-        '<div class="a2-btns">'+btn('保存参数','wpsave','','确定保存续期参数？立即写入设备配置',true)+
+        '<div class="a2-btns">'+btn('保存参数','wpsaveconf','','确定保存续期参数？立即写入设备配置',true)+
         btn('重新读取','svcrefresh','conf')+'</div>','写')+
       card('说明','<div class="a2-note">管理员口令只存于设备，不经过本界面。</div>','只读',true);
     return group('后台日志')+
@@ -17172,6 +17174,55 @@ return qrcode;
       '<div class="a2-note" data-slot="lang-st" style="margin-top:10px">'+st+'</div>',
       '新','all');
   }
+  var WP_LS='aura_wallpaper', WP_ST={on:0,url:'',light:30,dark:55};
+  function wpLoad(){
+    try{var j=JSON.parse(lsGet(WP_LS)||'{}');WP_ST={on:j.on?1:0,url:String(j.url||''),light:Math.max(0,Math.min(80,num(j.light==null?30:j.light))),dark:Math.max(0,Math.min(80,num(j.dark==null?55:j.dark)))};}catch(e){}
+    return WP_ST;
+  }
+  /* 存储适配点：B 阶段把这里换成设备配置读取，界面与状态字段不变。 */
+  function wpApply(){
+    var r=document.documentElement,on=WP_ST.on&&WP_ST.url,d=r.classList.contains('a2-dark')?WP_ST.dark:WP_ST.light;
+    r.style.setProperty('--a2-wp',on?'url("'+WP_ST.url.replace(/"/g,'%22')+'")':'none');
+    r.style.setProperty('--a2-wp-dim',d+'%');
+  }
+  function wpCardHTML(){
+    var en=i18nCur()==='en',o=wpLoad(),t=en?function(a,b){return b}:function(a,b){return a};
+    return card(t('AURA 壁纸','AURA wallpaper'),
+      '<div class="a2-row"><label><input type="checkbox" id="wp-on"'+(o.on?' checked':'')+'> '+t('启用壁纸','Enable')+'</label></div>'+
+      field(t('图片网址（可选）','Image URL (optional)'),'<input class="a2-inp" id="wp-url" placeholder="https://..." value="'+esc(o.url)+'">')+
+      '<div class="a2-field"><label style="display:block;margin-bottom:6px;font-weight:600">'+t('本机图片（自动压缩）','Local image (auto-compressed)')+'</label><input type="file" id="wp-file" accept="image&#47;*" style="width:100%;font-size:12px;color:var(--a2-ink-soft)"></div>'+
+      '<div class="a2-row"><input type="range" id="wp-light" min="0" max="80" value="'+o.light+'" style="flex:1;min-width:0"><span>'+t('浅色','Light')+' <b id="wp-light-v">'+o.light+'%</b></span></div>'+
+      '<div class="a2-row" style="margin-top:6px"><input type="range" id="wp-dark" min="0" max="80" value="'+o.dark+'" style="flex:1;min-width:0"><span>'+t('深色','Dark')+' <b id="wp-dark-v">'+o.dark+'%</b></span></div>'+
+      '<div class="a2-btns">'+btn(t('保存并应用','Save'),'wpsave')+btn(t('恢复默认','Reset'),'wpreset')+'</div>'+
+      '<div class="a2-note" data-slot="wp-st">'+t('只美化 AURA；当前保存在本机浏览器，下一版支持设备存储。','Only AURA. Stored in this browser; device storage comes next.')+'</div>',t('新','New'),'all');
+  }
+  function wpSync(){
+    var h=activeHost(),o=WP_ST,on=$('#wp-on',h),u=$('#wp-url',h);
+    if(on)on.checked=!!o.on;if(u&&document.activeElement!==u)u.value=o.url;
+    ['light','dark'].forEach(function(k){var x=$('#wp-'+k,h),v=$('#wp-'+k+'-v',h);if(x)x.value=o[k];if(v)v.textContent=o[k]+'%';});
+  }
+  function wpHandle(e){
+    var t=e.target,h=activeHost();if(!h)return;
+    if(t.id==='wp-file'&&t.files&&t.files[0]){
+      var en=i18nCur()==='en',f=t.files[0],rd=new FileReader();
+      if(f.size>20971520){toast(en?'Image must be under 20MB':'图片不能超过 20MB','is-bad');return;}
+      rd.onload=function(){var im=new Image();im.onload=function(){
+        var s=Math.min(1,1920/Math.max(im.width,im.height)),w=Math.round(im.width*s),hh=Math.round(im.height*s),c=document.createElement('canvas');c.width=w;c.height=hh;c.getContext('2d').drawImage(im,0,0,w,hh);
+        var d=c.toDataURL('image/jpeg',.78);if(d.length>1800000){toast(en?'Compressed image is too large':'图片压缩后仍过大','is-bad');return;}
+        WP_ST.url=d;WP_ST.on=1;lsSet(WP_LS,JSON.stringify(WP_ST));wpApply();wpSync();
+        var st=$('[data-slot=wp-st]',h);if(st)st.textContent=en?'Compressed and saved in this browser.':'已压缩并保存到本机浏览器。';
+      };im.onerror=function(){toast(en?'Could not read image':'图片读取失败','is-bad');};im.src=String(rd.result);};rd.readAsDataURL(f);return;
+    }
+    if(t.id==='wp-light'||t.id==='wp-dark'){var k=t.id.slice(3);WP_ST[k]=num(t.value);var v=$('#wp-'+k+'-v',h);if(v)v.textContent=WP_ST[k]+'%';wpApply();}
+  }
+  function wpSaveForm(){
+    var h=activeHost(),en=i18nCur()==='en',on=$('#wp-on',h),u=$('#wp-url',h);
+    WP_ST.on=on&&on.checked?1:0;WP_ST.url=u?String(u.value||'').trim():WP_ST.url;
+    if(WP_ST.on&&!/^(https?:\/\/|data:image\/(png|jpeg|webp|gif);base64,)/i.test(WP_ST.url)){toast(en?'Choose an image or enter an http(s) URL':'请选择图片或填写 http(s) 图片网址','is-bad');return;}
+    lsSet(WP_LS,JSON.stringify(WP_ST));wpApply();wpSync();
+    var st=$('[data-slot=wp-st]',h);if(st)st.textContent=en?'Applied. Stored only in this browser.':'已应用，仅保存在本机浏览器。';toast(en?'Wallpaper applied':'壁纸已应用','is-ok');
+  }
+  function wpReset(){WP_ST={on:0,url:'',light:30,dark:55};lsSet(WP_LS,JSON.stringify(WP_ST));wpApply();wpSync();var en=i18nCur()==='en';toast(en?'Default restored':'已恢复默认','is-ok');}
   var NOTIFY_B64='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';
 
 /* ============ 主动告警推送（v2.4.64 · 仅 UC + WoPan） ============
@@ -17902,9 +17953,11 @@ function viewSettings(el){
       '<div class="a2-btns">'+btn('返回原版界面','old')+'</div>','只读','all')+
       alertCardHTML()+
       langCardHTML()+
+      wpCardHTML()+
       '</div>';
     el.innerHTML=h;
     alertLoad();
+    wpLoad();
     var inp=$('#a2-setfind',el);
     if(inp) inp.addEventListener('input',function(){ setFilter(inp.value); });
     setFilter('');
@@ -20324,7 +20377,9 @@ function viewSettings(el){
     oluprb:olUpdRoll,
     olupclean:olUpdClean,
     wpact:wpAct,
-    wpsave:wpSave,
+    wpsave:wpSaveForm,
+    wpsaveconf:wpSave,
+    wpreset:function(cmd,n){ return wpReset(); },
     ucact:ucAct,
     smbsave:sv2SmbSave,
     exp_test:expTest,
@@ -20530,7 +20585,7 @@ function perform(a,n){
     if(a==='outclear'){ var ob=$('.a2-shell [data-slot=out]'); if(ob) ob.textContent='就绪'; return; }
     if(a==='outmin'){ var op=$('.a2-out'); if(op) op.classList.toggle('is-min'); return; }
     if(a==='theme'){ document.documentElement.classList.toggle('a2-dark');
-      lsSet(LS_THEME,document.documentElement.classList.contains('a2-dark')?'dark':'light'); return; }
+      lsSet(LS_THEME,document.documentElement.classList.contains('a2-dark')?'dark':'light'); wpApply(); return; }
     if(a==='menu'){
       /* 🔴 断点判定必须与 CSS 同源：CSS 用 @media(max-width:900px)，JS 便用 matchMedia 同一查询。
          旧写法 window.innerWidth<=900 含滚动条宽度，桌面窄窗口（901~915 且带滚动条）会出现
@@ -21243,6 +21298,7 @@ function perform(a,n){
     shellNode.addEventListener('change',function(e){
       var t=e.target;
       if(t&&t.id==='a2-gofid') gofPick();
+      if(t&&(t.id==='wp-on'||t.id==='wp-file')) wpHandle(e);
       /* 审计：检查时长在态势卡上改，立刻记住（下次点「开始安全检查」用它）。
          不持久化：这是「本次想看多久」，不是需要跨会话记住的偏好。 */
       if(t&&t.getAttribute&&t.getAttribute('data-f')==='auddur'){
@@ -21258,6 +21314,7 @@ function perform(a,n){
     /* 短信：字数实时计数（运营商按 70/67 字拆分计费）+ 输入框随内容增高 + 会话搜索 */
     shellNode.addEventListener('input',function(e){
       var t=e.target;
+      if(t&&(t.id==='wp-light'||t.id==='wp-dark')) wpHandle(e);
       if(t&&t.id==='a2-smsbody'){
         var c=$('#a2-smscnt'); if(c) c.textContent=String(t.value||'').length+' / 500';
         /* 自适应高度：固定 1 行起，最多长到 120px（再多内部滚动），否则多行短信看不见自己写了什么 */
@@ -21409,6 +21466,7 @@ function perform(a,n){
     ensureCss();
     document.documentElement.classList.add('aura2-on');
     if(lsGet(LS_THEME)==='dark') document.documentElement.classList.add('a2-dark');
+    wpLoad(); wpApply();
     /* 用户上次选的刷新节奏与速率单位：读回后由 buildShell / mountLiveBar 直接按新值渲染 */
     var iv=parseInt(lsGet(LS_IV),10);
     if(!isNaN(iv)&&iv>=0&&iv<=60) LIVE_IV=iv;
