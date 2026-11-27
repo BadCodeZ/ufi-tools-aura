@@ -2,7 +2,7 @@
 
 AURA 是一套**注入式界面插件**，用于 [UFI-TOOLS](https://github.com/kanoqwq/UFI-TOOLS) 设备管理后台。它接管官方页面的渲染，用官方 API 重新组织出 13 个功能域的工作台，把原本分散在多个页面与社区插件里的能力收拢到统一界面中。
 
-- **当前版本**：`v2.5.3`（BUILD `1117b`）
+- **当前版本**：`v2.5.4`（BUILD `1127a`）
 - **适配对象**：UFI-TOOLS 完整版 4.1.x（真机验证于 ZTE F50 / Android 13）
 - **形态**：单文件、自包含、零外部依赖
 - **许可**：Apache License 2.0（原创部分）
@@ -116,19 +116,19 @@ UFI-TOOLS 存在两条不同 API 内核的产品线。AURA 启动时探测版别
 ### 方式一：官方插件机制（推荐）
 
 1. 登录 UFI-TOOLS 管理后台（默认 `http://192.168.0.1:2333`）。
-2. 进入「插件」页，添加插件，选择 `dist/ufitools-aura-v2.5.3.js`，提交。
+2. 进入「插件」页，添加插件，选择 `dist/ufitools-aura-v2.5.4.js`，提交。
 3. 刷新页面。AURA 自动启用，无需任何手动开关或配置。
 
 ### 方式二：直接注入 `custom_head`
 
-将 `dist/ufitools-aura-v2.5.4-beta.js` 的内容写入后台 `custom_head`。压缩版已包含完整的段标记，可直接整段粘贴。
+将 `dist/ufitools-aura-v2.5.4.js` 的内容写入后台 `custom_head`。压缩版已包含完整的段标记，可直接整段粘贴。
 
 ### 关于两个文件
 
 | 文件 | 体积 | MD5 前 8 | 用途 |
 |---|---|---|---|
-| `dist/ufitools-aura-v2.5.4-beta.js` | 845,981 B | `c68601ba` | **推荐安装**。CSS 与 JS 均已压缩（terser，仅结构化简，不改字面量） |
-| `ufitools-aura-v2.js` | 1,390,271 B | `e86a7eeb` | 完整源码，含全部中文注释。保留用于阅读、审计与二次开发 |
+| `dist/ufitools-aura-v2.5.4.js` | 860,443 B | `08bc9599` | **推荐安装**。CSS 与 JS 均已压缩（terser，仅结构化简，不改字面量） |
+| `ufitools-aura-v2.js` | 1,408,068 B | `aa40b40d` | 完整源码，含全部中文注释。保留用于阅读、审计与二次开发 |
 
 两者功能完全一致，仅注释与空白不同。注入使用 `<script id="aura2-engine">` + `<style id="aura2-css">` 两段，遵循官方 `<!-- [KANO_PLUGIN_START] ... [KANO_PLUGIN_END] -->` 块规范，重复注入幂等。
 
@@ -174,9 +174,9 @@ UFI-TOOLS 存在两条不同 API 内核的产品线。AURA 启动时探测版别
 .
 ├── ufitools-aura-v2.js            # 完整源码（单文件，含注释）
 ├── dist/
-│   └── ufitools-aura-v2.5.3.js    # 压缩发布版（推荐安装）
+│   └── ufitools-aura-v2.5.4.js    # 压缩发布版（推荐安装）
 ├── docs/
-│   ├── AURA-v2.5.3-更新说明.md     # 本版更新说明
+│   ├── AURA-v2.5.4-更新说明.md     # 本版更新说明
 │   └── assets/                    # README 截图
 ├── scripts/
 │   └── minify.cjs                 # 压缩脚本
@@ -201,7 +201,7 @@ UFI-TOOLS 存在两条不同 API 内核的产品线。AURA 启动时探测版别
 ```bash
 npm install terser
 mkdir -p build
-node scripts/minify.cjs dist/ufitools-aura-v2.5.3.js
+node scripts/minify.cjs dist/ufitools-aura-v2.5.4.js
 ```
 
 脚本默认读取仓库根目录的 `ufitools-aura-v2.js`；输出路径的父目录需已存在。省略参数时输出到 `build/_min_test.js`。
@@ -262,9 +262,9 @@ AURA.viewSet('sms', false)  // 界面模块显隐；AURA.hidden() 读取当前�
 
 ## 更新记录
 
-当前版本 `v2.5.3`，主要变更见 [docs/AURA-v2.5.3-更新说明.md](docs/AURA-v2.5.3-更新说明.md)：
+当前版本 `v2.5.4`，主要变更见 [docs/AURA-v2.5.4-更新说明.md](docs/AURA-v2.5.4-更新说明.md)：
 
-- v2.5.4-beta：新增 AURA 独立壁纸，支持本机图片上传、图片网址、明暗主题遮罩强度与恢复默认；当前图片保存在本机浏览器，下一版接入设备存储
+- v2.5.4：新增设备持久化壁纸、语言切换、告警推送与统一设置卡片；修复遮罩实时生效、URL 白名单、配置写入回读和恢复默认保留图片；统一壁纸透明层级并清理失效代码
 - v2.5.3：修复 OpenList 包内文件名错位导致的安装失败、樱花映射下载源 404 / 启动参数错误与守护空转；概览四卡改为按内容高度排布，系统域窄屏长版本号不再溢出；樱花映射「打开」改为与「复制」一致的原生按钮，尺寸与文字坐标完全对齐；同时修正 ADG 默认口令检测语义并移除无法执行的改密提示（检测能力保留）
 - v2.5.2：新增版别探测与通用版友好提示
 - v2.5.1：视觉精度打磨——等宽斜杠零、按输入方式而非屏宽适配触控、横滚容器边界、设备名来源徽标、服务停止意图区分

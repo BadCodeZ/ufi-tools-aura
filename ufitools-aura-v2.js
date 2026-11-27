@@ -29,6 +29,7 @@
 /* ===== 1. 设计系统 v2（青绿品牌，独立于官方与旧插件视觉） ===== */
 :root{
   --a2-brand:#3482FF; --a2-brand-deep:#0B5FD9; --a2-brand-soft:rgba(52,130,255,.10);
+  --a2-wp-shade:15,23,42; --a2-wp: none; --a2-wp-base:0%;
   --a2-ink:#0f172a; --a2-ink-soft:#5b6c82; --a2-line:rgba(15,23,42,.09);
   --a2-surface:#fff; --a2-surface-2:#f1f5f9; --a2-field:#fff; --a2-ctl:#fff; --a2-bg:#eef2f7;
   --a2-ok:#16a34a; --a2-warn:#d97706; --a2-warn-ink:#92400e; --a2-bad:#dc2626;
@@ -53,6 +54,7 @@
 }
 html.a2-dark{
   --a2-brand:#3482FF; --a2-brand-deep:#0073DD; --a2-brand-soft:rgba(52,130,255,.16);
+  --a2-wp-shade:0,0,0;
   --a2-ink:#e6edf3; --a2-ink-soft:#94a3b8; --a2-line:rgba(230,237,243,.10);
   --a2-surface:#10161f; --a2-surface-2:#161e29; --a2-field:#161e29; --a2-ctl:#161e29; --a2-bg:#0a0e14;
   --a2-ok:#4ade80; --a2-warn:#fbbf24; --a2-warn-ink:#fbbf24; --a2-bad:#f87171;
@@ -86,7 +88,7 @@ html.aura2-on .a2-shell,html.aura2-on .a2-shell *,
 html.aura2-on .a2-find,html.aura2-on .a2-find *{text-shadow:none;}
 /* ===== 3. 外壳 ===== */
 .a2-shell{position:relative;min-height:100vh;color:var(--a2-ink);
-  background:linear-gradient(180deg,rgba(15,23,42,var(--a2-wp-dim,0%)),rgba(15,23,42,var(--a2-wp-dim,0%))),var(--a2-wp,none),var(--a2-bg);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--a2-bg) var(--a2-wp-base,0%),transparent),color-mix(in srgb,var(--a2-bg) var(--a2-wp-base,0%),transparent)),var(--a2-wp,none),var(--a2-bg);
   background-size:cover;background-position:center;background-attachment:fixed;background-repeat:no-repeat;
   /* 🔴 官方 body 自带 word-break:break-all，会继承到整棵子树（英文单词中间断行、
      NBSP 也拦不住）。必须显式打回 normal，长串由各处 break-word 兜底。 */
@@ -109,7 +111,7 @@ html.aura2-on .a2-find,html.aura2-on .a2-find *{text-shadow:none;}
    🔴 三段式 flex 结构（头 flex:none / 目录 flex:1 / 底 flex:none）不变，
    故 v2.4.50 的「底栏恒贴侧栏底、不随目录滚动」契约照旧成立。 */
 .a2-side{position:sticky;top:0;align-self:flex-start;box-sizing:border-box;height:100vh;flex:0 0 var(--a2-side);width:var(--a2-side);
-  z-index:60;background:color-mix(in srgb,var(--a2-surface) 78%,transparent);backdrop-filter:blur(24px) saturate(1.2);border-right:1px solid var(--a2-line);
+  z-index:60;background:var(--a2-surface);border-right:1px solid var(--a2-line);
   padding:0;
   display:flex;flex-direction:column;overflow:hidden;
   transition:flex-basis var(--a2-dur) ease,width var(--a2-dur) ease;}
@@ -255,10 +257,11 @@ html.a2-collapsed .a2-build{display:none;}
    读到「标题 → 状态 → 操作」的动线被打断。16px 与主区卡片间距同尺度，分组一眼可辨。
    🔴 手机段（≤760）另有 gap:8，不跟随本值：窄屏三组会折行，16px 会把行距拉开。 */
 .a2-top{display:flex;align-items:center;gap:var(--a2-sp-4);margin-bottom:var(--a2-sp-4);flex-wrap:wrap;
-  position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--a2-bg) 78%,transparent);backdrop-filter:blur(24px) saturate(1.2);}
+  position:sticky;top:0;z-index:40;background:var(--a2-bg);}
 /* 吸顶后才出现分隔线，静止时不改变原有视觉 */
 .a2-top.is-stuck{box-shadow:0 1px 0 var(--a2-line),0 8px 16px -14px rgba(0,0,0,.55);}
-.a2-title{font-size:var(--a2-fs-xl);font-weight:700;}
+.a2-title{font-size:var(--a2-fs-xl);font-weight:700;color:var(--a2-ink);}
+html.a2-wp-on .a2-title{font-size:var(--a2-fs-2xl);font-weight:750;color:var(--a2-ink);letter-spacing:-.02em;text-shadow:0 1px 8px color-mix(in srgb,var(--a2-bg) 55%,transparent);}
 /* 标题行：菜单图标键 + 标题组横排（手机上菜单键落在左上角） */
 .a2-top-h{display:flex;align-items:center;gap:var(--a2-sp-2);min-width:0;}
 .a2-top-h > div:last-child{min-width:0;}
@@ -1407,8 +1410,9 @@ html.a2-dark .a2-stat.is-dur .a2-stat-ic{color:var(--a2-ink-soft);}
 
 /* 概览一屏：主图卡 + 四卡详情行（KPI 条 → 主图 → 详情，单一阅读动线） */
 .a2-ov{display:flex;flex-direction:column;gap:var(--a2-sp-4);min-width:0;}
-.a2-grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--a2-sp-4);align-items:start;}
-/* 四格 KPI 与插件双栏保留等高：前者结构同构，后者左右高度本就接近 */
+.a2-grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--a2-sp-4);align-items:stretch;}
+/* 四张概览内容卡整行等高（v2.5.4）：桌面四列同一行，平板/手机两列同一行。
+   之前 v2.5.3 的 align-items:start 让内存卡单独决定行高，造成其余卡片高度不齐。 */
 /* data-n ＝ 当前可见卡数（ovApply 写入）。隐藏后若仍按 4 列排，右侧会整片空着，
    所以列数跟着可见数走。n=2/4 沿用基础与断点默认，不另写规则。 */
 .a2-grid4[data-n="1"]{grid-template-columns:minmax(0,1fr);}
@@ -1435,12 +1439,10 @@ html.a2-dark .a2-stat.is-dur .a2-stat-ic{color:var(--a2-ink-soft);}
 .a2-ovmv{display:flex;gap:var(--a2-sp-1);}
 .a2-ovmv .a2-mini{min-width:28px;padding:0 var(--a2-sp-1);}
 .a2-ovmv .a2-mini[disabled]{opacity:.35;cursor:not-allowed;}
-/* 概览四卡按内容高度排（v2.5.3）：内存卡 402px 会撑高同排所有卡，
-   排行卡底部因此空出 120px 以上。等高只保留给结构同构的 KPI 与插件双栏。
-   内容多的卡自然决定行高，矮卡不再被拉长；布局调整仍只改顺序与显隐。 */
+/* 等高后内容顶部对齐，底部自然留白；不再用 margin-top:auto 把最后一块顶到卡底。
+   这样既保持四卡外框齐平，又不会让矮卡出现大段无意义空白。 */
 @media (min-width:1100px){
   .a2-grid4 > .a2-card{display:flex;flex-direction:column;}
-  .a2-grid4 > .a2-card > *:last-child:not(:nth-child(2)){margin-top:auto;}
 }
 /* ===== 4c. 实时页（概览）重构 ===== */
 /* 状态带（对齐预览版 1.6fr : 1fr×4）：原来用 6 列栅格 + 运营商卡 span 2 实现，
@@ -2749,11 +2751,88 @@ html:not(.a2-dark) [data-skin=v3]{--v3-line:rgba(15,23,42,.06);--v3-line-2:rgba(
    原 D 方案是 20px 圆角 + 双层柔光（in 高光 + 远投影），深色下每张卡都浮起来，
    四卡并排时边界互相争夺视线；预览版只靠一条 1px 描边分层，密度立刻降下来。
    悬停保留「边框提亮」，不再抬投影（没有投影可抬）。 */
-[data-skin=v3] .a2-card{background:color-mix(in srgb,var(--v3-surface) 92%,transparent);backdrop-filter:blur(16px);border:1px solid var(--v3-line);
+[data-skin=v3] .a2-card{background:var(--v3-surface);border:1px solid var(--v3-line);
   border-radius:var(--a2-r-sm);padding:var(--a2-sp-4);
   transition:border-color var(--a2-dur) ease;}
 [data-skin=v3] .a2-card:hover{border-color:var(--v3-line-2);}
-.a2-wp-on .a2-card,.a2-wp-on .a2-top,.a2-wp-on .a2-side{box-shadow:0 8px 32px rgba(0,0,0,.12);}
+/* ===== AURA 壁纸材质统一层（v2.5.4） =====
+   层级：背景氛围 → 侧栏导航 → 页面标题 → 外层卡片 → 内部组件 → 控件。
+   所有玻璃只在 html.a2-wp-on 生效；关闭壁纸保持 2.5.3 原主题。 */
+.a2-wp-on [data-skin=v3] .a2-card{background:color-mix(in srgb,var(--v3-surface) 30%,transparent);backdrop-filter:blur(6px) saturate(1.12);-webkit-backdrop-filter:blur(6px) saturate(1.12);border-color:color-mix(in srgb,var(--v3-line) 45%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--a2-surface) 12%,transparent);}
+html.a2-dark.a2-wp-on [data-skin=v3] .a2-card{background:color-mix(in srgb,var(--v3-surface) 32%,transparent);}
+/* 同一材质规则覆盖所有内容承载块，避免只有 .a2-card 透明、KPI/列表/输出区仍是实心。
+   内部组件必须比外层卡片更轻：浅色 12%，否则会出现“卡中卡比整张卡更实”的层级倒置。 */
+html.a2-wp-on .a2-stat,
+html.a2-wp-on .a2-rc,
+html.a2-wp-on .a2-htemp,
+html.a2-wp-on .a2-out,
+html.a2-wp-on .a2-inline-h,
+html.a2-wp-on .a2-panel,
+html.a2-wp-on .a2-subcard,
+html.a2-wp-on .a2-setrow,
+html.a2-wp-on .a2-srow,
+html.a2-wp-on .a2-note{background:color-mix(in srgb,var(--a2-surface) 12%,transparent);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border-color:transparent;box-shadow:none;}
+html.a2-dark.a2-wp-on .a2-stat,
+html.a2-dark.a2-wp-on .a2-rc,
+html.a2-dark.a2-wp-on .a2-htemp,
+html.a2-dark.a2-wp-on .a2-out,
+html.a2-dark.a2-wp-on .a2-inline-h,
+html.a2-dark.a2-wp-on .a2-panel,
+html.a2-dark.a2-wp-on .a2-subcard,
+html.a2-dark.a2-wp-on .a2-setrow,
+html.a2-dark.a2-wp-on .a2-srow,
+html.a2-dark.a2-wp-on .a2-note{background:color-mix(in srgb,var(--a2-surface) 18%,transparent);}
+.a2-wp-on .a2-side{background:linear-gradient(180deg,color-mix(in srgb,var(--a2-bg) 56%,transparent),color-mix(in srgb,var(--a2-bg) 42%,transparent));backdrop-filter:blur(10px) saturate(1.15);-webkit-backdrop-filter:blur(10px) saturate(1.15);border-right:1px solid color-mix(in srgb,var(--a2-line) 50%,transparent);}
+/* 顶栏在页面顶部不铺任何底色（否则会在标题行下方切出一条硬边，看起来像第二层遮罩）；
+   只有滚动吸顶后才出现玻璃底，保证内容从下面穿过时仍可读。 */
+.a2-wp-on .a2-top{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;}
+/* 吸顶也不建立矩形滤镜层；标题保持可读，内容正常从下方经过。 */
+.a2-wp-on .a2-top.is-stuck{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;}
+/* 顶栏不投影、不画方形底边：只用纵向渐变在吸顶时柔化内容穿过。 */
+.a2-wp-on .a2-side{box-shadow:none;}
+.a2-wp-on .a2-top.is-stuck{box-shadow:none;}
+/* 控件也去掉纯白底，统一为轻玻璃；主按钮仍保留品牌色。 */
+html.a2-wp-on .a2-btn:not(.a2-pri),
+html.a2-wp-on .a2-mini,
+html.a2-wp-on .a2-iv,
+html.a2-wp-on .a2-live,
+html.a2-wp-on .a2-seg,
+html.a2-wp-on .a2-chip,
+html.a2-wp-on .a2-seg button.a2-on,
+html.a2-wp-on .a2-side-foot button,
+html.a2-wp-on .a2-table th,
+html.a2-wp-on .a2-tbl th{background:color-mix(in srgb,var(--a2-surface) 16%,transparent);border-color:transparent;box-shadow:none;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+/* 标题行的实时状态与刷新间隔只做弱描边，不再填白，避免标题下出现方形实心块。 */
+html.a2-wp-on .a2-live,
+html.a2-wp-on .a2-iv{background:color-mix(in srgb,var(--a2-surface) 16%,transparent);border-color:color-mix(in srgb,var(--a2-line) 50%,transparent);box-shadow:none;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+html.a2-dark.a2-wp-on .a2-live,
+html.a2-dark.a2-wp-on .a2-iv{background:color-mix(in srgb,var(--a2-surface) 12%,transparent);border-color:color-mix(in srgb,var(--a2-line) 42%,transparent);}
+html.a2-wp-on .a2-side-foot button{background:transparent;border-color:color-mix(in srgb,var(--a2-line) 50%,transparent);color:var(--a2-ink-soft);box-shadow:none;}
+html.a2-dark.a2-wp-on .a2-tbl th{background:color-mix(in srgb,var(--a2-surface) 12%,transparent);}
+/* 概览同级卡片必须同层：五块状态、实时速率与四张内容卡统一透明档位。
+   温度小块是卡内辅助信息，不属于同级主卡，继续保持更轻。 */
+html.a2-wp-on .a2-view[data-view="overview"] .a2-stat,
+html.a2-wp-on .a2-view[data-view="overview"] .a2-rc,
+html.a2-wp-on .a2-view[data-view="overview"] .a2-card{background:color-mix(in srgb,var(--a2-surface) 30%,transparent);backdrop-filter:blur(6px) saturate(1.12);-webkit-backdrop-filter:blur(6px) saturate(1.12);}
+html.a2-dark.a2-wp-on .a2-view[data-view="overview"] .a2-stat,
+html.a2-dark.a2-wp-on .a2-view[data-view="overview"] .a2-rc,
+html.a2-dark.a2-wp-on .a2-view[data-view="overview"] .a2-card{background:color-mix(in srgb,var(--a2-surface) 32%,transparent);}
+/* 透明档位（仅壁纸态）：内容块 12/18；控件 16/12；外层卡片 30/32；
+   悬停 8；导航选中 14/18。层级越内越轻，避免组件反向压过外层卡片。 */
+html.a2-wp-on .a2-side-foot button:hover{background:color-mix(in srgb,var(--a2-surface) 8%,transparent);border-color:transparent;color:var(--a2-ink);}
+html.a2-wp-on .a2-ring2 i{background:color-mix(in srgb,var(--a2-surface) 14%,transparent);}
+/* 侧栏分组标题不再是独立卡片：只保留文字与细分隔，不用底色和圆角强调“组卡”。 */
+html.a2-wp-on .a2-navgrp{margin-top:var(--a2-sp-2);}
+html.a2-wp-on .a2-nav .a2-navgrp-h{background:transparent;border-radius:0;padding:var(--a2-sp-3) var(--a2-sp-3) var(--a2-sp-1);color:var(--a2-ink-soft);opacity:.72;font-size:var(--a2-fs-xs);font-weight:600;letter-spacing:.35px;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none;border:0;}
+html.a2-dark.a2-wp-on .a2-nav .a2-navgrp-h{opacity:.74;}
+html.a2-wp-on .a2-navgrp+.a2-navgrp{border-top:0;padding-top:0;margin-top:var(--a2-sp-1);}
+/* 普通导航项完全透明；悬停仅一层极轻底色；选中才出现品牌色软底，避免每项都像卡片。 */
+html.a2-wp-on .a2-nav button{background:transparent;color:color-mix(in srgb,var(--a2-ink-soft) 92%,transparent);}
+html.a2-wp-on .a2-nav button:hover{background:color-mix(in srgb,var(--a2-surface) 8%,transparent);color:var(--a2-ink);}
+html.a2-wp-on .a2-nav button.a2-on{background:color-mix(in srgb,var(--a2-brand) 14%,transparent);color:var(--a2-brand-deep);}
+html.a2-dark.a2-wp-on .a2-nav button{color:color-mix(in srgb,var(--a2-ink-soft) 78%,transparent);}
+html.a2-dark.a2-wp-on .a2-nav button:hover{background:color-mix(in srgb,var(--a2-surface) 7%,transparent);color:var(--a2-ink);}
+html.a2-dark.a2-wp-on .a2-nav button.a2-on{background:color-mix(in srgb,var(--a2-brand) 18%,transparent);color:var(--a2-brand);}
 /* 标题：不画下边线。D 方案靠字重 + 留白分层，加线会退回"工程面板"的观感。
    字重 700 与服务域一致（已确认保留粗体）。 */
 /* 标题：不画下边线。对齐预览版的重量（13px / 600 / 下距 12）：
@@ -2765,6 +2844,69 @@ html:not(.a2-dark) [data-skin=v3]{--v3-line:rgba(15,23,42,.06);--v3-line-2:rgba(
   padding:1px var(--a2-sp-2);}
 [data-skin=v3] .a2-card > h3 .a2-tag.is-write{border-color:transparent;}
 
+/* 新增设置卡：沿用原有设置的分组说明与双列字段节奏，避免壁纸卡成为独立面板。 */
+.a2-setsec{padding:var(--a2-sp-3) 0;border-top:1px solid var(--a2-line);}
+.a2-setsec:first-child{padding-top:0;border-top:0;}
+.a2-setsec-h{display:flex;align-items:baseline;gap:var(--a2-sp-3);margin-bottom:var(--a2-sp-3);}
+.a2-setsec-h b{font-size:var(--a2-fs-sm);font-weight:600;}
+.a2-setsec-h span{font-size:var(--a2-fs-xs);color:var(--a2-ink-soft);}
+.a2-wp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--a2-sp-3) var(--a2-sp-4);}
+.a2-wp-wide{grid-column:1/-1;}
+.a2-wp-card .a2-field{min-width:0;}
+.a2-wp-card .a2-field>label{display:block;font-size:var(--a2-fs-sm);font-weight:600;margin-bottom:var(--a2-sp-2);}
+.a2-wp-card .a2-field small{display:block;font-size:var(--a2-fs-xs);color:var(--a2-ink-soft);margin-top:var(--a2-sp-1);}
+.a2-wp-card input[type=file]{width:100%;font-size:var(--a2-fs-sm);color:var(--a2-ink-soft);}
+/* 按钮沿用设置域控件语言：36px 高、8px 圆角、500 字重；主按钮是保存，恢复为次操作。 */
+.a2-wp-card .a2-btns{display:flex;gap:var(--a2-sp-2);align-items:center;margin-top:var(--a2-sp-3);}
+.a2-wp-card .a2-btn{min-height:36px;height:36px;padding:0 var(--a2-sp-4);border-radius:var(--a2-r-sm);font-size:var(--a2-fs-sm);font-weight:500;line-height:1;display:inline-flex;align-items:center;justify-content:center;}
+.a2-wp-card .a2-btn[data-a=wpsave]{background:var(--a2-brand);color:#fff;border:1px solid var(--a2-brand);}
+.a2-wp-card .a2-btn[data-a=wpsave]:hover{background:var(--a2-brand-deep);border-color:var(--a2-brand-deep);}
+.a2-wp-card .a2-btn[data-a=wpreset]{background:transparent;color:var(--a2-ink-soft);border:1px solid var(--a2-line);}
+.a2-wp-card .a2-btn[data-a=wpreset]:hover{color:var(--a2-ink);border-color:var(--a2-line-2);}
+.a2-wp-card input[type=file]::file-selector-button{min-height:32px;margin-right:var(--a2-sp-3);padding:0 var(--a2-sp-3);border:1px solid var(--a2-line);border-radius:var(--a2-r-sm);background:var(--a2-ctl);color:var(--a2-ink);font-family:inherit;font-size:var(--a2-fs-sm);font-weight:500;cursor:pointer;}
+.a2-wp-card input[type=file]::file-selector-button:hover{background:var(--a2-hover);border-color:var(--a2-line-2);}
+.a2-wp-card input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:var(--a2-brand);}
+.a2-wp-card input[type=range]{accent-color:var(--a2-brand);height:4px;margin:8px 0;}
+.a2-wp-check{display:flex;align-items:center;gap:var(--a2-sp-2);min-height:36px;color:var(--a2-ink-soft);font-weight:400;}
+.a2-wp-range{display:flex;align-items:center;gap:var(--a2-sp-3);min-height:36px;}
+.a2-wp-range input{flex:1;min-width:0;}
+.a2-wp-range b{min-width:42px;text-align:right;font-size:var(--a2-fs-sm);font-variant-numeric:tabular-nums;}
+html.a2-wp-on .a2-setsec{border-color:color-mix(in srgb,var(--a2-line) 55%,transparent);}
+/* 壁纸态主次操作共用档位，专用选择器高于全局控件规则。 */
+html.a2-wp-on .a2-wp-card .a2-btn[data-a=wpreset],
+html.a2-wp-on .a2-new-actions .a2-btn:not([data-a=alertsave]){background:color-mix(in srgb,var(--a2-surface) 16%,transparent);border-color:color-mix(in srgb,var(--a2-line) 55%,transparent);}
+html.a2-wp-on .a2-wp-card input[type=file]::file-selector-button{background:color-mix(in srgb,var(--a2-surface) 16%,transparent);border:1px solid color-mix(in srgb,var(--a2-line) 55%,transparent);}
+html.a2-dark.a2-wp-on .a2-wp-card .a2-btn[data-a=wpreset],
+html.a2-dark.a2-wp-on .a2-wp-card input[type=file]::file-selector-button,
+html.a2-dark.a2-wp-on .a2-new-actions .a2-btn:not([data-a=alertsave]){background:color-mix(in srgb,var(--a2-surface) 12%,transparent);}
+html.a2-wp-on .a2-wp-card .a2-btn[data-a=wpsave],
+html.a2-wp-on .a2-new-actions .a2-btn[data-a=alertsave]{background:var(--a2-brand);color:#fff;border-color:var(--a2-brand);}
+html.a2-wp-on .a2-wp-card .a2-btn[data-a=wpsave]:hover{background:var(--a2-brand-deep);border-color:var(--a2-brand-deep);}
+@media(max-width:760px){.a2-wp-grid{grid-template-columns:minmax(0,1fr);gap:var(--a2-sp-3);}.a2-setsec-h{align-items:flex-start;flex-direction:column;gap:var(--a2-sp-1);}}
+/* 新增设置共用：说明 → 分组字段 → 主/次操作 → 状态。沿用原设置的边界和控件密度。 */
+.a2-new-desc{margin:0 0 var(--a2-sp-3);}
+.a2-new-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--a2-sp-3) var(--a2-sp-4);}
+.a2-new-status{margin-top:var(--a2-sp-3);}
+.a2-new-actions{gap:var(--a2-sp-2);margin-top:var(--a2-sp-3);}
+.a2-new-actions .a2-btn{min-height:36px;padding:0 var(--a2-sp-4);border-radius:var(--a2-r-sm);font-size:var(--a2-fs-sm);font-weight:500;}
+.a2-new-actions .a2-btn[data-a=alertsave]{background:var(--a2-brand);color:#fff;border-color:var(--a2-brand);}
+.a2-new-actions .a2-btn:not([data-a=alertsave]){background:transparent;color:var(--a2-ink-soft);border-color:var(--a2-line);}
+.a2-lang-seg{max-width:340px;}
+.a2-lang-seg .a2-btn{flex:1;min-height:34px;justify-content:center;font-weight:500;background:transparent;color:var(--a2-ink-soft);border:0;box-shadow:none;}
+.a2-lang-seg .a2-btn.a2-on{background:var(--a2-surface);color:var(--a2-brand-deep);box-shadow:0 1px 3px rgba(15,23,42,.08);}
+html.a2-wp-on .a2-lang-seg .a2-btn.a2-on{background:color-mix(in srgb,var(--a2-surface) 30%,transparent);color:var(--a2-brand-deep);box-shadow:none;}
+.a2-new-status{background:transparent;padding:0;}
+.a2-choices{display:flex;flex-wrap:wrap;gap:var(--a2-sp-2);}
+.a2-choice{display:inline-flex;align-items:center;gap:var(--a2-sp-2);min-height:36px;padding:0 var(--a2-sp-3);font-size:var(--a2-fs-sm);font-weight:400;color:var(--a2-ink-soft);border:1px solid var(--a2-line);border-radius:var(--a2-r-sm);background:transparent;cursor:pointer;}
+.a2-choice-block{display:flex;max-width:280px;}
+.a2-choice input{width:16px;height:16px;margin:0;accent-color:var(--a2-brand);flex:none;}
+.a2-choice:has(input:checked){color:var(--a2-brand-deep);border-color:var(--a2-brand);background:var(--a2-brand-soft);}
+html.a2-wp-on .a2-choice{background:transparent;border-color:color-mix(in srgb,var(--a2-line) 55%,transparent);}
+html.a2-wp-on .a2-choice:has(input:checked){background:color-mix(in srgb,var(--a2-brand) 14%,transparent);}
+html.a2-wp-on .a2-new-actions .a2-btn:not([data-a=alertsave]){background:color-mix(in srgb,var(--a2-surface) 16%,transparent);border-color:color-mix(in srgb,var(--a2-line) 55%,transparent);}
+html.a2-wp-on .a2-new-actions .a2-btn[data-a=alertsave]{background:var(--a2-brand);color:#fff;border-color:var(--a2-brand);}
+html.a2-dark.a2-wp-on .a2-new-actions .a2-btn:not([data-a=alertsave]){background:color-mix(in srgb,var(--a2-surface) 12%,transparent);}
+@media(max-width:760px){.a2-new-grid{grid-template-columns:minmax(0,1fr);}.a2-choice-block{max-width:none;}.a2-lang-seg{max-width:none;}}
 /* 分组标题：圆点锚点（比竖条柔和，贴合卡片化的圆角语言） */
 [data-skin=v3] .a2-group{font-size:var(--a2-fs-2xs);font-weight:700;letter-spacing:.14em;
   color:var(--a2-ink-soft);margin:var(--a2-sp-4) 0 var(--a2-sp-1);gap:var(--a2-sp-2);}
@@ -2908,7 +3050,7 @@ details.a2-behmore[open] summary::before{content:"- ";}
   /* 版本号规则（2026-10-23 定）：大版本号.小版本号.补丁号
      大版本号＝架构级变更；小版本号＝功能更新（v2.1 之后的功能更新升为 v2.2）；补丁号＝修复更新（v2.1 之后的修复更新升为 v2.1.1）。
      补丁号为 0 时省略显示；BUILD 是内部构建批次，与版本号正交，每次发布递增。 */
-  var VER='v2.5.4-beta', BUILD='1117c', LS_TOKEN='aura_token', LS_OFF='aura_off', LS_THEME='aura_theme',
+  var VER='v2.5.4', BUILD='1127a', LS_TOKEN='aura_token', LS_OFF='aura_off', LS_THEME='aura_theme',
       LS_NAV='aura_nav', LS_IV='aura_iv', LS_RATEU='aura_rateu', LS_BATT='aura_batt',
       LS_PRIV='aura_privacy', LS_HIDE='aura_hide', LS_OV='aura_ov',
       OFFICIAL_TOKEN_KEY='kano_sms_token';
@@ -2954,7 +3096,6 @@ details.a2-behmore[open] summary::before{content:"- ";}
       T_BAND_READ=1200,     /* 频段写后回读延迟（ms） */
       T_SW_READ=1400,       /* 开关写后回读延迟（ms） */
       T_LONGPRESS=500,      /* 短信长按触发（ms） */
-      T_DEV=30000,          /* 设备信息轮询周期（ms） */
       CT_HEAD=600,          /* conntrack 单次读取行数：与审计域口径一致 */
       T_LOG_MAX=20000,      /* 底部输出台字符上限：超出丢最旧一半，防轮询场景一夜撑爆 DOM */
       T_ERR_GC=300000,      /* errSeen 过期键淘汰周期（ms） */
@@ -4782,7 +4923,8 @@ details.a2-behmore[open] summary::before{content:"- ";}
   function liveClock(t){
     if(!t) return '--:--:--';
     var d=new Date(t);
-    return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+':'+('0'+d.getSeconds()).slice(-2);
+    var p=function(n){ return ('0'+n).slice(-2); };
+    return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
   }
   /* 实时域（有自动轮询）显示「实时」，其余域显示「已同步」，状态条语义随域收敛；
      暂停自动刷新时统一显示「已暂停」，与右下角间隔控件同源（LIVE_IV<=0） */
@@ -4958,6 +5100,7 @@ details.a2-behmore[open] summary::before{content:"- ";}
           if(dt>0) sysMon.cpu=Math.max(0,Math.min(100,(1-di/dt)*100));
         }
         var mt=0,ma=0;
+        /* 两个累加值在下方解析 meminfo 时使用。 */
         String(g.m||'').split('\n').forEach(function(l){
           var m=l.match(/^(MemTotal|MemAvailable):\s+(\d+)/);
           if(m){ if(m[1]==='MemTotal') mt=num(m[2]); else ma=num(m[2]); }
@@ -8000,7 +8143,7 @@ details.a2-behmore[open] summary::before{content:"- ";}
 
   /* v2.4.71 应用分类视图：只消费 audState.hist 的分类统计，不触发任何设备命令。 */
   function renderAudApps(){
-    var H=audState.hist||{}, i, j, q, t;
+    var H=audState.hist||{}, i;
     if(H.err){ failSlot('aud-apps','读取失败：'+esc(H.err),'aud-apps'); return; }
     if(!H.rows){
       patchSlot('aud-apps','<div class="a2-note">暂无归档记录。到「活动记录」页签点「开始检查」，'+
@@ -12227,7 +12370,7 @@ details.a2-behmore[open] summary::before{content:"- ";}
           });
         });
       }
-      var p=s.split('|'), ts=p[0]||'', uid=p[1]||'', ce=parseInt(p[3]||'0',10);
+      var p=s.split('|'), ts=p[0]||'', ce=parseInt(p[3]||'0',10);
       var wsec=parseInt(((SV2.wopan.st||{}).W||'300'),10)||300;
       var left=ce>0?Math.floor(wsec-(Date.now()/1000-ce)):-1;
       var exp=left<=0 && ce>0;
@@ -17167,39 +17310,91 @@ return qrcode;
         '专业术语、设备返回值、命令输出与日志保留原文（便于排障）。切换后页面会重新加载。';
     var st=en?'Current: English (some technical text stays in Chinese)':'当前：简体中文';
     return card('语言 / Language',
-      '<div class="a2-note" style="margin:-6px 0 10px">'+note+'</div>'+
-      '<div class="a2-btns">'+
+      '<div class="a2-sub a2-new-desc">'+note+'</div>'+
+      '<div class="a2-setsec"><div class="a2-setsec-h"><b>'+(en?'Display language':'界面语言')+'</b><span>'+(en?'Saved on this browser':'保存在当前浏览器')+'</span></div>'+
+      '<div class="a2-seg a2-lang-seg" role="group" aria-label="Language">'+
         btn('简体中文','langset','zh',null,null,!en)+
         btn('English','langset','en',null,null,en)+
-      '</div>'+
-      '<div class="a2-note" data-slot="lang-st" style="margin-top:10px">'+st+'</div>',
+      '</div></div>'+
+      '<div class="a2-note a2-new-status" data-slot="lang-st">'+st+'</div>',
       '新','all');
   }
-  var WP_LS='aura_wallpaper', WP_ST={on:0,url:'',light:30,dark:55};
-  function wpLoad(){
-    try{var j=JSON.parse(lsGet(WP_LS)||'{}');WP_ST={on:j.on?1:0,url:String(j.url||''),light:Math.max(0,Math.min(80,num(j.light==null?30:j.light))),dark:Math.max(0,Math.min(80,num(j.dark==null?55:j.dark)))};}catch(e){}
-    return WP_ST;
+  /* AURA 壁纸（设备持久化）：配置 /data/kano_cron/aura_wallpaper.json；图片经官方
+     /api/upload_img 落到设备 uploads，再改名固定文件，换浏览器仍可读取。 */
+  var WP_CFG='/data/kano_cron/aura_wallpaper.json';
+  var WP_IMG='/data/data/com.minikano.f50_sms/files/uploads/aura_wallpaper.jpg';
+  var WP_ST={on:0,url:'',light:30,dark:55}, WP_P=null;
+  /* 同源上传图片相对地址必须放行；外部只接受 http/https。 */
+  function wpSafeUrl(u){
+    return /^(https?:\/\/|\/api\/uploads\/)/i.test(u)?u:'';
   }
-  /* 存储适配点：B 阶段把这里换成设备配置读取，界面与状态字段不变。 */
+  function wpParse(txt){
+    var o={on:0,url:'',light:30,dark:55};
+    try{var j=JSON.parse(txt||'{}');if(!j||typeof j!=='object')return o;
+      o.on=j.on?1:0;o.url=wpSafeUrl(String(j.url||''));
+      o.light=Math.max(0,Math.min(80,num(j.light==null?30:j.light)));
+      o.dark=Math.max(0,Math.min(80,num(j.dark==null?55:j.dark)));
+    }catch(e){}
+    return o;
+  }
+  function wpLoad(force){
+    if(WP_P&&!force)return WP_P;
+    WP_P=shell('cat '+WP_CFG+' 2>/dev/null').then(function(txt){
+      if(String(txt||'').trim())WP_ST=wpParse(txt);
+      try{localStorage.removeItem('aura_wallpaper');}catch(e){}
+      wpApply();
+    }).catch(function(){wpApply();}).then(function(){wpSync();return WP_ST;});
+    return WP_P;
+  }
   function wpApply(){
-    var r=document.documentElement,on=WP_ST.on&&WP_ST.url,d=r.classList.contains('a2-dark')?WP_ST.dark:WP_ST.light;
-    r.style.setProperty('--a2-wp',on?'url("'+WP_ST.url.replace(/"/g,'%22')+'")':'none');
-    r.style.setProperty('--a2-wp-dim',(on?Math.round(d*.65):0)+'%');
+    var r=document.documentElement,url=wpSafeUrl(WP_ST.url),on=WP_ST.on&&url;
+    r.style.setProperty('--a2-wp',on?'url("'+url.replace(/"/g,'%22')+'")':'none');
+    /* 滑块值直接控制全屏主题融合层，避免只有文字变化、实际不生效。 */
+    r.style.setProperty('--a2-wp-base',on?(r.classList.contains('a2-dark')?WP_ST.dark:WP_ST.light)+'%':'0%');
     r.classList.toggle('a2-wp-on',!!on);
   }
+  function wpSaveCfg(){
+    var b=b64u(JSON.stringify(WP_ST));
+    return shell('umask 077; mkdir -p /data/kano_cron; printf %s '+shq(b)+' | base64 -d > '+WP_CFG+' && chmod 600 '+WP_CFG+' && echo OK')
+      .then(function(o){
+        if(!/^OK\s*$/m.test(String(o)))throw new Error('配置写入失败');
+        return shell('base64 '+WP_CFG+' 2>/dev/null');
+      }).then(function(o){
+        if(String(o||'').replace(/\s/g,'')!==b)throw new Error('配置回读不一致');
+        WP_P=Promise.resolve(WP_ST);
+      });
+  }
+  function wpUpload(blob){
+    var fd=new FormData();fd.append('file',blob,'aura_wallpaper.jpg');
+    return req('/api/upload_img',{method:'POST',body:fd}).then(function(j){
+      if(!j||!j.url)throw new Error('图片上传失败');
+      var u=String(j.url);
+      if(u.indexOf('/uploads/')!==0)return u;
+      var src='/data/data/com.minikano.f50_sms/files'+u;
+      return shell('mv -f '+shq(src)+' '+shq(WP_IMG)+' 2>/dev/null && echo OK').then(function(o){
+        return /OK/.test(String(o))?'/api/uploads/aura_wallpaper.jpg?v='+Date.now():('/api'+u);
+      },function(){return '/api'+u;});
+    });
+  }
   function wpCardHTML(){
-    var en=i18nCur()==='en',o=wpLoad(),t=en?function(a,b){return b}:function(a,b){return a};
-    return card(t('AURA 壁纸','AURA wallpaper'),
-      '<div class="a2-row"><label><input type="checkbox" id="wp-on"'+(o.on?' checked':'')+'> '+t('启用壁纸','Enable')+'</label></div>'+
-      field(t('图片网址（可选）','Image URL (optional)'),'<input class="a2-inp" id="wp-url" placeholder="https://..." value="'+esc(o.url)+'">')+
-      '<div class="a2-field"><label style="display:block;margin-bottom:6px;font-weight:600">'+t('本机图片（自动压缩）','Local image (auto-compressed)')+'</label><input type="file" id="wp-file" accept="image&#47;*" style="width:100%;font-size:12px;color:var(--a2-ink-soft)"></div>'+
-      '<div class="a2-row"><input type="range" id="wp-light" min="0" max="80" value="'+o.light+'" style="flex:1;min-width:0"><span>'+t('浅色','Light')+' <b id="wp-light-v">'+o.light+'%</b></span></div>'+
-      '<div class="a2-row" style="margin-top:6px"><input type="range" id="wp-dark" min="0" max="80" value="'+o.dark+'" style="flex:1;min-width:0"><span>'+t('深色','Dark')+' <b id="wp-dark-v">'+o.dark+'%</b></span></div>'+
+    var en=i18nCur()==='en',o=WP_ST,t=en?function(a,b){return b}:function(a,b){return a};
+    return '<div class="a2-card a2-spanall a2-wp-card" id="a2-wp-card">'+
+      '<h3>'+t('AURA 壁纸','AURA wallpaper')+'<span class="a2-tag">'+t('新','New')+'</span></h3>'+
+      '<div class="a2-setsec"><div class="a2-setsec-h"><b>'+t('背景与图片','Background and image')+'</b><span>'+t('设备保存，跨浏览器读取','Saved on device, shared across browsers')+'</span></div>'+
+      '<div class="a2-wp-grid">'+
+      '<div class="a2-field"><label for="wp-on">'+t('启用壁纸','Enable wallpaper')+'</label><label class="a2-wp-check"><input type="checkbox" id="wp-on"'+(o.on?' checked':'')+'><span>'+t('开启背景融合','Enable background blending')+'</span></label></div>'+
+      '<div class="a2-field"><label for="wp-file">'+t('本机图片','Local image')+'</label><input type="file" id="wp-file" accept="image&#47;*"><small>'+t('自动压缩后保存到设备','Compressed and saved on device')+'</small></div>'+
+      '<div class="a2-field a2-wp-wide"><label for="wp-url">'+t('图片网址（可选）','Image URL (optional)')+'</label><input class="a2-inp" id="wp-url" placeholder="https://..." value="'+esc(o.url)+'"></div></div></div>'+
+      '<div class="a2-setsec"><div class="a2-setsec-h"><b>'+t('主题融合','Theme blending')+'</b><span>'+t('只调整材质，不改变主题与布局','Material only; theme and layout unchanged')+'</span></div>'+
+      '<div class="a2-wp-grid">'+
+      '<div class="a2-field"><label for="wp-light">'+t('浅色遮罩','Light overlay')+'</label><div class="a2-wp-range"><input type="range" id="wp-light" min="0" max="80" value="'+o.light+'"><b id="wp-light-v">'+o.light+'%</b></div></div>'+
+      '<div class="a2-field"><label for="wp-dark">'+t('深色遮罩','Dark overlay')+'</label><div class="a2-wp-range"><input type="range" id="wp-dark" min="0" max="80" value="'+o.dark+'"><b id="wp-dark-v">'+o.dark+'%</b></div></div></div></div>'+
       '<div class="a2-btns">'+btn(t('保存并应用','Save'),'wpsave')+btn(t('恢复默认','Reset'),'wpreset')+'</div>'+
-      '<div class="a2-note" data-slot="wp-st">'+t('只美化 AURA；当前保存在本机浏览器，下一版支持设备存储。','Only AURA. Stored in this browser; device storage comes next.')+'</div>',t('新','New'),'all');
+      '<div class="a2-note" data-slot="wp-st">'+t('保存到设备，换浏览器仍生效；只美化 AURA，不改官方主题。','Stored on this device and shared across browsers. AURA only.')+'</div></div>';
   }
   function wpSync(){
     var h=activeHost(),o=WP_ST,on=$('#wp-on',h),u=$('#wp-url',h);
+    if(!h)return;
     if(on)on.checked=!!o.on;if(u&&document.activeElement!==u)u.value=o.url;
     ['light','dark'].forEach(function(k){var x=$('#wp-'+k,h),v=$('#wp-'+k+'-v',h);if(x)x.value=o[k];if(v)v.textContent=o[k]+'%';});
   }
@@ -17210,21 +17405,31 @@ return qrcode;
       if(f.size>20971520){toast(en?'Image must be under 20MB':'图片不能超过 20MB','is-bad');return;}
       rd.onload=function(){var im=new Image();im.onload=function(){
         var s=Math.min(1,1920/Math.max(im.width,im.height)),w=Math.round(im.width*s),hh=Math.round(im.height*s),c=document.createElement('canvas');c.width=w;c.height=hh;c.getContext('2d').drawImage(im,0,0,w,hh);
-        var d=c.toDataURL('image/jpeg',.78);if(d.length>1800000){toast(en?'Compressed image is too large':'图片压缩后仍过大','is-bad');return;}
-        WP_ST.url=d;WP_ST.on=1;lsSet(WP_LS,JSON.stringify(WP_ST));wpApply();wpSync();
-        var st=$('[data-slot=wp-st]',h);if(st)st.textContent=en?'Compressed and saved in this browser.':'已压缩并保存到本机浏览器。';
+        c.toBlob(function(bl){
+          if(!bl||bl.size>2500000){toast(en?'Compressed image is too large':'图片压缩后仍过大','is-bad');return;}
+          toast(en?'Saving to device…':'正在保存到设备…');
+          wpUpload(bl).then(function(url){WP_ST.url=url;WP_ST.on=1;return wpSaveCfg();}).then(function(){
+            wpApply();wpSync();var st=$('[data-slot=wp-st]',h);if(st)st.textContent=en?'Saved to device.':'已保存到设备。';toast(en?'Wallpaper saved':'壁纸已保存','is-ok');
+          }).catch(function(err){toast((en?'Save failed: ':'保存失败：')+err.message,'is-bad',true);});
+        },'image/jpeg',.8);
       };im.onerror=function(){toast(en?'Could not read image':'图片读取失败','is-bad');};im.src=String(rd.result);};rd.readAsDataURL(f);return;
     }
-    if(t.id==='wp-light'||t.id==='wp-dark'){var k=t.id.slice(3);WP_ST[k]=num(t.value);var v=$('#wp-'+k+'-v',h);if(v)v.textContent=WP_ST[k]+'%';wpApply();}
+    if(t.id==='wp-light'||t.id==='wp-dark'){var k=t.id.slice(3);WP_ST[k]=Math.max(0,Math.min(80,num(t.value)));var v=$('#wp-'+k+'-v',h);if(v)v.textContent=WP_ST[k]+'%';wpApply();}
   }
   function wpSaveForm(){
     var h=activeHost(),en=i18nCur()==='en',on=$('#wp-on',h),u=$('#wp-url',h);
     WP_ST.on=on&&on.checked?1:0;WP_ST.url=u?String(u.value||'').trim():WP_ST.url;
-    if(WP_ST.on&&!/^(https?:\/\/|data:image\/(png|jpeg|webp|gif);base64,)/i.test(WP_ST.url)){toast(en?'Choose an image or enter an http(s) URL':'请选择图片或填写 http(s) 图片网址','is-bad');return;}
-    lsSet(WP_LS,JSON.stringify(WP_ST));wpApply();wpSync();
-    var st=$('[data-slot=wp-st]',h);if(st)st.textContent=en?'Applied. Stored only in this browser.':'已应用，仅保存在本机浏览器。';toast(en?'Wallpaper applied':'壁纸已应用','is-ok');
+    if(WP_ST.on&&!/^(https?:\/\/|\/api\/uploads\/)/i.test(WP_ST.url)){toast(en?'Choose an image or enter an http(s) URL':'请选择图片或填写 http(s) 图片网址','is-bad');return;}
+    toast(en?'Saving…':'正在保存…');
+    wpSaveCfg().then(function(){wpApply();wpSync();var st=$('[data-slot=wp-st]',h);if(st)st.textContent=en?'Applied and stored on this device.':'已应用并保存到设备。';toast(en?'Wallpaper applied':'壁纸已应用','is-ok');})
+      .catch(function(err){toast(en?'Save failed: ':'保存失败：'+err.message,'is-bad',true);});
   }
-  function wpReset(){WP_ST={on:0,url:'',light:30,dark:55};lsSet(WP_LS,JSON.stringify(WP_ST));wpApply();wpSync();var en=i18nCur()==='en';toast(en?'Default restored':'已恢复默认','is-ok');}
+  function wpReset(){
+    /* 恢复外观默认值，不删除已上传图片；再次启用仍可复用设备图片。 */
+    WP_ST={on:0,url:wpSafeUrl(WP_ST.url),light:30,dark:55};
+    wpSaveCfg().then(function(){wpApply();wpSync();var en=i18nCur()==='en';toast(en?'Default restored':'已恢复默认，已保留上传图片','is-ok');})
+      .catch(function(err){toast('恢复失败：'+err.message,'is-bad',true);});
+  }
   var NOTIFY_B64='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';
 
 /* ============ 主动告警推送（v2.4.64 · 仅 UC + WoPan） ============
@@ -17255,28 +17460,29 @@ function alertReady(){
 }
 
 function achk(name,label){
-  return '<label class="a2-chk" style="display:inline-flex;align-items:center;gap:6px;font-weight:400;margin-right:14px">'+
-    '<input type="checkbox" value="'+name+'"> '+label+'</label>';
+  return '<label class="a2-chk a2-choice"><input type="checkbox" value="'+name+'"><span>'+label+'</span></label>';
 }
 
 function alertCardHTML(){
-  return card('告警推送',
-    '<div class="a2-note" style="margin:-6px 0 10px">网盘登录失效或挂载异常时自动推送到手机（边沿触发，不会刷屏）。</div>'+
-    '<div class="a2-field"><label style="display:inline-flex;align-items:center;gap:6px;font-weight:600">'+
-      '<input type="checkbox" id="alert-enable"> 启用告警推送</label></div>'+
-    '<div class="a2-field"><label style="display:block;margin-bottom:6px;font-weight:600">推送通道（可多选）</label>'+
-      '<div class="a2-chkgrp" id="alert-chk" style="display:flex;flex-wrap:wrap;gap:4px 0">'+
+  return '<div class="a2-card a2-spanall a2-new-card" id="a2-alert-card"><h3>告警推送<span class="a2-tag">新</span></h3>'+
+    '<div class="a2-sub a2-new-desc">网盘登录失效或挂载异常时自动推送到手机；边沿触发，不会刷屏。</div>'+
+    '<div class="a2-setsec"><div class="a2-setsec-h"><b>推送开关</b><span>按异常状态变化推送</span></div>'+
+    '<label class="a2-choice a2-choice-block"><input type="checkbox" id="alert-enable"><span>启用告警推送</span></label></div>'+
+    '<div class="a2-setsec"><div class="a2-setsec-h"><b>推送通道</b><span>至少选择一种通道</span></div>'+
+      '<div class="a2-choices" id="alert-chk">'+
       achk('serverchan','Server酱')+achk('pushplus','PushPlus')+achk('wecom','企业微信')+achk('bark','Bark')+
       '</div></div>'+
+    '<div class="a2-setsec"><div class="a2-setsec-h"><b>通道参数</b><span>只填写已启用通道的凭据</span></div>'+
+    '<div class="a2-new-grid">'+
     field('设备名','<input class="a2-inp" id="alert-device" placeholder="如 F50">')+
     field('Server酱 sendkey','<input class="a2-inp" id="alert-sc" placeholder="sctapi.ftqq.com 的 sendkey">')+
     field('PushPlus token','<input class="a2-inp" id="alert-pp" placeholder="www.pushplus.plus 的 token">')+
     field('企业微信 webhook','<input class="a2-inp" id="alert-wc" placeholder="qyapi.weixin.qq.com/...?key=">')+
     field('Bark 地址','<input class="a2-inp" id="alert-bk" placeholder="https://api.day.app/xxxx/">')+
-    '<div class="a2-btns">'+btn('保存配置','alertsave',null,'写入配置并部署 notify.sh',true)+
+    '</div></div>'+
+    '<div class="a2-btns a2-new-actions">'+btn('保存配置','alertsave',null,'写入配置并部署 notify.sh',true)+
       btn('测试推送','alerttest',null,'立即发一条测试通知（不受总开关约束）')+'</div>'+
-    '<div class="a2-note" data-slot="alert-st" style="margin-top:10px">加载中…</div>',
-    '新','all');
+    '<div class="a2-note a2-new-status" data-slot="alert-st">加载中…</div></div>';
 }
 
 /* 加载配置到表单（同时确保 notify.sh 已部署） */
@@ -17306,11 +17512,15 @@ function alertSave(n){
   var en=$('#alert-enable'), dev=$('#alert-device'), sc=$('#alert-sc'),
       pp=$('#alert-pp'), wc=$('#alert-wc'), bk=$('#alert-bk');
   var chs=[]; $$('#alert-chk input').forEach(function(c){ if(c.checked) chs.push(c.value); });
+  var devName=(((dev&&dev.value)||'').trim()||'F50');
+  /* 设备名只保留常见 ASCII 标识符，避免换行/引号破坏设备侧 key=value 配置。 */
+  devName=devName.replace(/[^A-Za-z0-9_.-]/g,'').slice(0,32)||'F50';
+  if(dev) dev.value=devName;
   var body=[
     '# AURA 告警推送配置（KEY=VALUE，每行一条）',
     'ALERT_ENABLE='+((en&&en.checked)?'1':'0'),
     'ALERT_CHANNEL='+((chs.join(','))||'bark'),
-    'ALERT_DEVICE='+(((dev&&dev.value)||'').trim()||'F50'),
+    'ALERT_DEVICE='+devName,
     'SC_KEY='+(((sc&&sc.value)||'').trim()),
     'PP_TOKEN='+(((pp&&pp.value)||'').trim()),
     'WECOM_URL='+(((wc&&wc.value)||'').trim()),
@@ -17322,7 +17532,8 @@ function alertSave(n){
     return shell('cat > /data/kano_cron/aura_alert.conf <<\'ACONFEOF\'\n'+body+'ACONFEOF\n'+
       'chmod 600 /data/kano_cron/aura_alert.conf; echo SAVED');
   }).then(function(o){
-    var st=$('[data-slot="alert-st"]'); if(st) st.textContent='已保存：'+String(o||'').trim();
+    if(!/^SAVED\s*$/m.test(String(o)))throw new Error('设备未确认写入');
+    var st=$('[data-slot="alert-st"]'); if(st) st.textContent='已保存到设备';
     toast('告警配置已保存','is-ok');
   }).catch(function(e){
     var st=$('[data-slot="alert-st"]'); if(st) st.textContent='保存失败：'+((e&&e.message)||e);
@@ -17936,7 +18147,7 @@ function viewSettings(el){
       '<div class="a2-btns">'+btn('发送','gofsend',null,'将向固件下发该动作，参数一经下发立即生效',true)+
       btn('清除结果','gofclear')+'</div>'+
       '<div class="a2-term" data-slot="gofout">未发送</div>','写','all');
-    h+=card('关于设置',
+    var about=card('关于设置',
       '<div class="a2-note" style="margin-bottom:10px">版本 '+esc(VER)+' · 共 '+VIEWS.length+
       ' 个域。设置项沿用官方实现：点整行打开官方设置面板，改完在底部「保存」，未保存离开会二次确认；'+
       '开关项直接下发官方指令并回读状态。与专属域重复的入口已收敛：电源 → 设备域，插件 → 插件域，'+
@@ -17952,11 +18163,9 @@ function viewSettings(el){
       '沿用其界面语言与官方接口实现。部分功能移植自社区插件，出处已标在各自卡片或服务页：'+
       '信号质量评分源自「信号面板 1.0」（欢喜猴），按客户端流量源自「设备流量监控 v19.10」（钴雮），'+
       '网络加速源自「去限速 2.0」，樱花映射与 OpenList 分别源自同名插件（OpenList 作者 MiniKano）。</div>'+
-      '<div class="a2-btns">'+btn('返回原版界面','old')+'</div>','只读','all')+
-      alertCardHTML()+
-      langCardHTML()+
-      wpCardHTML()+
-      '</div>';
+      '<div class="a2-btns">'+btn('返回原版界面','old')+'</div>','只读','all');
+    h+=langCardHTML()+alertCardHTML()+wpCardHTML()+about;
+    h+='</div>';
     el.innerHTML=h;
     alertLoad();
     wpLoad();
@@ -21468,7 +21677,7 @@ function perform(a,n){
     ensureCss();
     document.documentElement.classList.add('aura2-on');
     if(lsGet(LS_THEME)==='dark') document.documentElement.classList.add('a2-dark');
-    wpLoad(); wpApply();
+    wpLoad();
     /* 用户上次选的刷新节奏与速率单位：读回后由 buildShell / mountLiveBar 直接按新值渲染 */
     var iv=parseInt(lsGet(LS_IV),10);
     if(!isNaN(iv)&&iv>=0&&iv<=60) LIVE_IV=iv;
